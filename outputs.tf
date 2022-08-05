@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-output "bucket_name" {
-  value = google_storage_bucket.main.name
+output "endpoint" {
+  value       = google_cloud_run_service.fe.status[0].url
+  description = "The url of the front end which we want to surface to the user"
+}
+
+output "sqlservername" {
+  value       = google_sql_database_instance.todo_database.name
+  description = "The name of the database that we randomly generated."
 }
