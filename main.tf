@@ -22,11 +22,8 @@ locals {
   sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   sacompute = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
   api_image = "us-central1-docker.pkg.dev/sic-container-repo/todo-app/api"
+  fe_image = "us-central1-docker.pkg.dev/sic-container-repo/todo-app/fe"
 }
-
-
-
-
 
 
 module "project-services" {
@@ -48,17 +45,9 @@ module "project-services" {
     "storage.googleapis.com",
     "secretmanager.googleapis.com",
     "run.googleapis.com",
-    "artifactregistry.googleapis.com",
     "redis.googleapis.com",
-    "workflows.googleapis.com"
   ]
 }
-
-
-
-
-
-
 
 # TODO: See if this can be modularized
 # Handle Permissions
@@ -71,7 +60,6 @@ variable "build_roles_list" {
     "roles/iam.serviceAccountUser",
     "roles/run.admin",
     "roles/secretmanager.secretAccessor",
-    "roles/artifactregistry.admin",
   ]
 }
 
@@ -89,10 +77,6 @@ resource "google_project_iam_member" "secretmanager_secretAccessor" {
   member     = "serviceAccount:${local.sacompute}"
   depends_on = [module.project-services]
 }
-
-
-
-
 
 
 resource "google_compute_network" "main" {
@@ -174,15 +158,18 @@ resource "google_sql_database" "database" {
 
 
 
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
 
 resource "google_sql_user" "main" {
   project  = var.project_id
   name     = "todo_user"
-  password = "todo_pass"
+  password = random_password.password.result
   instance = google_sql_database_instance.main.name
 }
-
-
 
 # Handle redis instance
 resource "google_redis_instance" "main" {
@@ -200,17 +187,8 @@ resource "google_redis_instance" "main" {
   depends_on              = [module.project-services]
 }
 
-# # Handle artifact registry
-# resource "google_artifact_registry_repository" "todo_app" {
-#   provider      = google-beta
-#   format        = "DOCKER"
-#   location      = var.region
-#   project       = var.project_id
-#   repository_id = "${var.deployment_name}-app"
-#   depends_on    = [module.project-services]
-# }
 
-# # Handle secrets
+# Handle secrets
 resource "google_secret_manager_secret" "redishost" {
   project = data.google_project.project.number
   replication {
@@ -240,22 +218,39 @@ resource "google_secret_manager_secret_version" "sqlhost" {
   enabled     = true
   secret      = "projects/${data.google_project.project.number}/secrets/sqlhost"
   secret_data = google_sql_database_instance.main.private_ip_address
-  depends_on  = [module.project-services, google_sql_database_instance.main, google_secret_manager_secret.sqlhost]
+  depends_on  = [google_sql_database_instance.main, google_secret_manager_secret.sqlhost]
 }
 
-# resource "null_resource" "cloudbuild_api" {
-#   provisioner "local-exec" {
-#     working_dir = "${path.module}/code/middleware"
-#     command     = "gcloud builds submit . --substitutions=_REGION=${var.region},_BASENAME=${var.deployment_name}"
-#   }
+resource "google_secret_manager_secret" "todo_user" {
+  project = data.google_project.project.number
+  replication {
+    automatic = true
+  }
+  secret_id  = "todo_user"
+  depends_on = [module.project-services]
+}
+resource "google_secret_manager_secret_version" "todo_user" {
+  enabled     = true
+  secret      = "projects/${data.google_project.project.number}/secrets/todo_user"
+  secret_data = "todo_user"
+  depends_on = [google_secret_manager_secret.todo_user]
+}
 
-#   depends_on = [
-#     google_artifact_registry_repository.todo_app,
-#     google_secret_manager_secret_version.redishost,
-#     google_secret_manager_secret_version.sqlhost,
-#     module.project-services
-#   ]
-# }
+resource "google_secret_manager_secret" "todo_pass" {
+  project = data.google_project.project.number
+  replication {
+    automatic = true
+  }
+  secret_id  = "todo_pass"
+  depends_on = [module.project-services]
+}
+resource "google_secret_manager_secret_version" "todo_pass" {
+  enabled     = true
+  secret      = "projects/${data.google_project.project.number}/secrets/todo_pass"
+  secret_data = google_sql_user.main.password
+   depends_on = [google_secret_manager_secret.todo_pass]
+}
+
 
 resource "google_cloud_run_service" "api" {
   name     = "${var.deployment_name}-api"
@@ -285,13 +280,25 @@ resource "google_cloud_run_service" "api" {
             }
           }
         }
+
         env {
-          name  = "todo_user"
-          value = "todo_user"
+          name = "todo_user"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.todo_user.secret_id
+              key  = "latest"
+            }
+          }
         }
-        env {
-          name  = "todo_pass"
-          value = "todo_pass"
+
+         env {
+          name = "todo_pass"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.todo_pass.secret_id
+              key  = "latest"
+            }
+          }
         }
         env {
           name  = "todo_name"
@@ -318,10 +325,32 @@ resource "google_cloud_run_service" "api" {
   }
   autogenerate_revision_name = true
   depends_on = [
-    google_project_iam_member.secretmanager_secretAccessor
+    google_project_iam_member.secretmanager_secretAccessor,
+    google_secret_manager_secret_version.todo_pass,
+    google_secret_manager_secret_version.todo_user,
   ]
 }
 
+resource "google_cloud_run_service" "fe" {
+  name     = "${var.deployment_name}-fe"
+  location = var.region
+  project  = var.project_id
+
+  template {
+    spec {
+      containers {
+        image = local.fe_image
+        ports {
+          container_port = 80
+        }
+        env {
+          name  = "ENDPOINT"
+          value = google_cloud_run_service.api.status[0].url
+        }
+      }
+    }
+  }
+}
 
 data "google_iam_policy" "noauth" {
   binding {
@@ -340,39 +369,9 @@ resource "google_cloud_run_service_iam_policy" "noauth_api" {
   policy_data = data.google_iam_policy.noauth.policy_data
 }
 
-# resource "null_resource" "cloudbuild_fe" {
-#   provisioner "local-exec" {
-#     working_dir = "${path.module}/code/frontend"
-#     command     = "gcloud builds submit . --substitutions=_REGION=${var.region},_BASENAME=${var.deployment_name}"
-#   }
-
-#   depends_on = [
-#     google_artifact_registry_repository.todo_app,
-#     google_cloud_run_service.api
-#   ]
-# }
-
-# resource "google_cloud_run_service" "fe" {
-#   name     = "${var.deployment_name}-fe"
-#   location = var.region
-#   project  = var.project_id
-
-#   template {
-#     spec {
-#       containers {
-#         image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.deployment_name}-app/fe"
-#         ports {
-#           container_port = 80
-#         }
-#       }
-#     }
-#   }
-#   depends_on = [null_resource.cloudbuild_fe]
-# }
-
-# resource "google_cloud_run_service_iam_policy" "noauth_fe" {
-#   location    = google_cloud_run_service.fe.location
-#   project     = google_cloud_run_service.fe.project
-#   service     = google_cloud_run_service.fe.name
-#   policy_data = data.google_iam_policy.noauth.policy_data
-# }
+resource "google_cloud_run_service_iam_policy" "noauth_fe" {
+  location    = google_cloud_run_service.fe.location
+  project     = google_cloud_run_service.fe.project
+  service     = google_cloud_run_service.fe.name
+  policy_data = data.google_iam_policy.noauth.policy_data
+}
