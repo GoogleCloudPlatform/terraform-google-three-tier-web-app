@@ -27,15 +27,18 @@ Functional examples are included in the
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-----:|:-----:|
-| bucket\_name | The name of the bucket to create | string | n/a | yes |
-| project\_id | The project ID to deploy to | string | n/a | yes |
+|------|-------------|------|---------|:--------:|
+| deployment\_name | The name of this particular deployment, will get added as a prefix to most resources. | `string` | n/a | yes |
+| project\_id | The project ID to deploy to | `any` | n/a | yes |
+| region | The Compute Region to deploy to | `string` | n/a | yes |
+| zone | The Compute Zonbe to deploy to | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| bucket\_name |  |
+| endpoint | The url of the front end which we want to surface to the user |
+| sqlservername | The name of the database that we randomly generated. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
