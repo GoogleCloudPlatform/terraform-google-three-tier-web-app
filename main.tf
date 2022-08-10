@@ -98,7 +98,9 @@ resource "google_compute_network" "main" {
 
 # # Handle Networking details
 resource "google_compute_global_address" "main" {
-  name          = "google-managed-services-vpn-connector"
+  name          = "${var.deployment_name}-vpc-address"
+  provider      = google-beta
+  labels        = var.labels
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
@@ -117,7 +119,7 @@ resource "google_service_networking_connection" "main" {
 resource "google_vpc_access_connector" "main" {
   provider       = google-beta
   project        = var.project_id
-  name           = "vpc-connector"
+  name           = "${var.deployment_name}-vpc-cx"
   ip_cidr_range  = "10.8.0.0/28"
   network        = google_compute_network.main.id
   region         = var.region
@@ -135,12 +137,14 @@ resource "google_sql_database_instance" "main" {
   database_version = "MYSQL_5_7"
   region           = var.region
   project          = var.project_id
+
   settings {
     tier                  = "db-g1-small"
     disk_autoresize       = true
     disk_autoresize_limit = 0
     disk_size             = 10
     disk_type             = "PD_SSD"
+    user_labels           = var.labels
     ip_configuration {
       ipv4_enabled    = false
       private_network = google_compute_network.main.id
@@ -151,8 +155,8 @@ resource "google_sql_database_instance" "main" {
   }
   deletion_protection = false
   depends_on = [
-    module.project-services, 
-    google_vpc_access_connector.main, 
+    module.project-services,
+    google_vpc_access_connector.main,
     google_service_networking_connection.main
   ]
 
@@ -180,6 +184,7 @@ resource "google_sql_user" "main" {
   instance = google_sql_database_instance.main.name
 }
 
+# Looked at using the module, but there doesn't seem to be a huge win there. 
 # Handle redis instance
 resource "google_redis_instance" "main" {
   authorized_network      = google_compute_network.main.id
@@ -194,12 +199,14 @@ resource "google_redis_instance" "main" {
   tier                    = "BASIC"
   transit_encryption_mode = "DISABLED"
   depends_on              = [module.project-services]
+  labels                  = var.labels
 }
 
 
 # Handle secrets
 resource "google_secret_manager_secret" "redishost" {
   project = data.google_project.project.number
+  labels  = var.labels
   replication {
     automatic = true
   }
@@ -215,6 +222,7 @@ resource "google_secret_manager_secret_version" "redishost" {
 
 resource "google_secret_manager_secret" "sqlhost" {
   project = data.google_project.project.number
+  labels  = var.labels
   replication {
     automatic = true
   }
@@ -229,6 +237,7 @@ resource "google_secret_manager_secret_version" "sqlhost" {
 }
 
 resource "google_secret_manager_secret" "todo_user" {
+  labels  = var.labels
   project = data.google_project.project.number
   replication {
     automatic = true
@@ -243,6 +252,7 @@ resource "google_secret_manager_secret_version" "todo_user" {
 }
 
 resource "google_secret_manager_secret" "todo_pass" {
+  labels  = var.labels
   project = data.google_project.project.number
   replication {
     automatic = true
@@ -325,12 +335,17 @@ resource "google_cloud_run_service" "api" {
         "run.googleapis.com/client-name"          = "terraform"
         "run.googleapis.com/vpc-access-egress"    = "all"
         "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.main.id
+
       }
     }
   }
+  metadata {
+    labels = var.labels
+  }
   autogenerate_revision_name = true
-   depends_on = [google_secret_manager_secret_version.todo_pass]
+  depends_on                 = [google_secret_manager_secret_version.todo_pass]
 }
+
 
 resource "google_cloud_run_service" "fe" {
   name     = "${var.deployment_name}-fe"
@@ -350,6 +365,9 @@ resource "google_cloud_run_service" "fe" {
         }
       }
     }
+  }
+  metadata {
+    labels = var.labels
   }
 }
 

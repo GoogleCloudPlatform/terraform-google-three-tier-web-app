@@ -15,6 +15,7 @@
 package multiple_buckets
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
@@ -26,103 +27,114 @@ import (
 func TestSimpleExample(t *testing.T) {
 	example := tft.NewTFBlueprintTest(t)
 
+	sqlname := example.GetStringOutput("sqlservername")
 	projectID := example.GetTFSetupStringOutput("project_id")
-	// prefix := "three-tier-app"
-	// region := "us-central1"
+	projectNumber := "929625475928"
+	prefix := "three-tier-app"
+	region := "us-central1"
 	// zone := "us-central1-a"
+
+	_ = projectNumber
+	_ = region
+	_ = prefix
+	_ = sqlname
 
 	example.DefineVerify(func(assert *assert.Assertions) {
 		example.DefaultVerify(assert)
 
-		// labelTests := map[string]struct {
-		// 	subsection string
-		// 	name       string
-		// 	zone       bool
-		// 	query      string
-		// }{
-		// 	"Label: Exemplar":          {subsection: "instances", name: fmt.Sprintf("%s-exemplar", prefix), zone: true, query: "labels.load-balanced-vms"},
-		// 	"Label: Instance Template": {subsection: "instance-templates", name: fmt.Sprintf("%s-template", prefix), query: "properties.labels.load-balanced-vms"},
-		// 	"Label: Image":             {subsection: "images", name: fmt.Sprintf("%s-latest", prefix), query: "labels.load-balanced-vms"},
-		// 	"Label: Snapshot":          {subsection: "snapshots", name: fmt.Sprintf("%s-snapshot", prefix), query: "labels.load-balanced-vms"},
-		// }
+		labelTests := map[string]struct {
+			subsection string
+			name       string
+			global     bool
+			region     bool
+			query      string
+		}{
+			"Label: Secret SQLHost":   {subsection: "secrets", global: false, region: false, name: "sqlhost", query: "labels.three-tier-app"},
+			"Label: Secret RedisHost": {subsection: "secrets", global: false, region: false, name: "redishost", query: "labels.three-tier-app"},
+			"Label: Secret todo_user": {subsection: "secrets", global: false, region: false, name: "todo_user", query: "labels.three-tier-app"},
+			"Label: Secret todo_pass": {subsection: "secrets", global: false, region: false, name: "todo_pass", query: "labels.three-tier-app"},
+			"Label: Service api":      {subsection: "run services", global: false, region: true, name: "three-tier-app-api", query: "metadata.labels.three-tier-app"},
+			"Label: Service fe":       {subsection: "run services", global: false, region: true, name: "three-tier-app-fe", query: "metadata.labels.three-tier-app"},
+			"Label: SQL":              {subsection: "sql instances", global: false, region: false, name: sqlname, query: "settings.userLabels.three-tier-app"},
+			"Label: Redis":            {subsection: "redis instances", global: false, region: true, name: "three-tier-app-cache", query: "labels.three-tier-app"},
+		}
 
-		// for name, tc := range labelTests {
-		// 	t.Run(name, func(t *testing.T) {
-		// 		gcloudOps := gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})
-		// 		if tc.zone {
-		// 			gcloudOps = gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--zone", zone})
-		// 		}
+		for name, tc := range labelTests {
+			t.Run(name, func(t *testing.T) {
+				gcloudOps := gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})
+				if tc.region {
+					gcloudOps = gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--region", region})
+				}
 
-		// 		cmdstr := fmt.Sprintf("compute %s describe %s", tc.subsection, tc.name)
-		// 		template := gcloud.Run(t, cmdstr, gcloudOps).Array()
+				cmdstr := fmt.Sprintf("%s describe %s", tc.subsection, tc.name)
+				template := gcloud.Run(t, cmdstr, gcloudOps).Array()
 
-		// 		match := template[0].Get(tc.query).String()
-		// 		assert.Equal("true", match, fmt.Sprintf("expected label (loadbalanced-vms) in subsection %s to be present", tc.subsection))
-		// 	})
-		// }
+				match := template[0].Get(tc.query).String()
+				assert.Equal("true", match, fmt.Sprintf("expected label (three-tier-app) in subsection %s to be present", tc.subsection))
+			})
+		}
 
-		// existenceTests := map[string]struct {
-		// 	subsection string
-		// 	global     bool
-		// 	zone       bool
-		// 	expected   string
-		// }{
-		// 	"Existence: Snapshot":            {subsection: "snapshots", global: false, zone: false, expected: fmt.Sprintf("%s-snapshot", prefix)},
-		// 	"Existence: Instance Group":      {subsection: "instance-groups managed", global: false, zone: true, expected: fmt.Sprintf("%s-mig", prefix)},
-		// 	"Existence: Image":               {subsection: "images", global: false, expected: fmt.Sprintf("%s-latest", prefix)},
-		// 	"Existence: Template":            {subsection: "instance-templates", global: false, expected: fmt.Sprintf("%s-template", prefix)},
-		// 	"Existence: Forwarding Rules":    {subsection: "forwarding-rules", global: true, expected: fmt.Sprintf("%s-lb", prefix)},
-		// 	"Existence: Target HTTP Proxies": {subsection: "target-http-proxies", global: true, expected: fmt.Sprintf("%s-lb-http-proxy", prefix)},
-		// 	"Existence: URL Maps":            {subsection: "url-maps", global: true, expected: fmt.Sprintf("%s-lb-url-map", prefix)},
-		// 	"Existence: Backend Services":    {subsection: "backend-services", global: true, expected: fmt.Sprintf("%s-lb-backend-default", prefix)},
-		// 	"Existence: Address":             {subsection: "addresses", global: true, expected: fmt.Sprintf("%s-lb-address", prefix)},
-		// }
+		existenceTests := map[string]struct {
+			subsection string
+			field      string
+			global     bool
+			region     bool
+			expected   string
+		}{
+			"Existence: Secret SQLHost":   {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/sqlhost", projectNumber)},
+			"Existence: Secret RedisHost": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/redishost", projectNumber)},
+			"Existence: Secret todo_user": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/todo_user", projectNumber)},
+			"Existence: Secret todo_pass": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/todo_pass", projectNumber)},
+			"Existence: Service todo-fe":  {subsection: "run services", field: "metadata.name", global: false, region: true, expected: fmt.Sprintf("%s-fe", prefix)},
+			"Existence: Service todo-api": {subsection: "run services", field: "metadata.name", global: false, region: true, expected: fmt.Sprintf("%s-api", prefix)},
+			"Existence: Redis":            {subsection: "redis instances", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/instances/%s-cache", projectID, region, prefix)},
+			"Existence: SQL":              {subsection: "sql instances", field: "name", global: false, region: false, expected: sqlname},
+			"Existence: VPN Connector":    {subsection: "compute networks vpc-access connectors", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/connectors/%s-vpc-cx", projectID, region, prefix)},
+			"Existence: VPN Address":      {subsection: "compute addresses", field: "name", global: true, region: false, expected: fmt.Sprintf("%s-vpc-address", prefix)},
+		}
 
-		// for name, tc := range existenceTests {
-		// 	t.Run(name, func(t *testing.T) {
-		// 		gcloudOps := gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})
-		// 		if tc.global {
-		// 			gcloudOps = gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--global"})
-		// 		}
-		// 		if tc.zone {
-		// 			gcloudOps = gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--zone", zone})
-		// 		}
+		for name, tc := range existenceTests {
+			t.Run(name, func(t *testing.T) {
+				gcloudOps := gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})
+				if tc.global {
+					gcloudOps = gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--global"})
+				}
+				if tc.region {
+					gcloudOps = gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--region", region})
+				}
 
-		// 		cmdstr := fmt.Sprintf("compute %s describe %s", tc.subsection, tc.expected)
-		// 		template := gcloud.Run(t, cmdstr, gcloudOps).Array()
+				cmdstr := fmt.Sprintf("%s describe %s", tc.subsection, tc.expected)
+				template := gcloud.Run(t, cmdstr, gcloudOps).Array()
 
-		// 		match := utils.GetFirstMatchResult(t, template, "name", tc.expected)
-		// 		assert.Equal(tc.expected, match.Get("name").String(), fmt.Sprintf("expected %s", tc.expected))
-		// 	})
-		// }
+				got := utils.GetFirstMatchResult(t, template, tc.field, tc.expected).Get(tc.field).String()
+				assert.Equal(tc.expected, got, fmt.Sprintf("expected %s got %s", tc.expected, got))
+			})
+		}
 
 		serviceTests := map[string]struct {
 			service string
 		}{
-			"Service compute": {service: "compute.googleapis.com"},
-			// "Label: Instance Template": {subsection: "instance-templates", name: fmt.Sprintf("%s-template", prefix), query: "properties.labels.load-balanced-vms"},
-			// "Label: Image":             {subsection: "images", name: fmt.Sprintf("%s-latest", prefix), query: "labels.load-balanced-vms"},
-			// "Label: Snapshot":          {subsection: "snapshots", name: fmt.Sprintf("%s-snapshot", prefix), query: "labels.load-balanced-vms"},
+			"Service compute":           {service: "compute"},
+			"Service cloudapis":         {service: "cloudapis"},
+			"Service vpcaccess":         {service: "vpcaccess"},
+			"Service servicenetworking": {service: "servicenetworking"},
+			"Service cloudbuild":        {service: "cloudbuild"},
+			"Service sql-component":     {service: "sql-component"},
+			"Service sqladmin":          {service: "sqladmin"},
+			"Service storage":           {service: "storage"},
+			"Service secretmanager":     {service: "secretmanager"},
+			"Service run":               {service: "run"},
+			"Service redis":             {service: "redis"},
 		}
 
 		services := gcloud.Run(t, "services list", gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})).Array()
 
 		for name, tc := range serviceTests {
 			t.Run(name, func(t *testing.T) {
-				match := utils.GetFirstMatchResult(t, services, "config.name", tc.service)
+				match := utils.GetFirstMatchResult(t, services, "config.name", fmt.Sprintf("%s.googleapis.com", tc.service))
 				assert.Equal("ENABLED", match.Get("state").String(), "%s service should be enabled", tc.service)
 			})
 		}
-
-		// t.Run("Outputs Value", func(t *testing.T) {
-		// 	got := example.GetStringOutput("console_page")
-		// 	expected := fmt.Sprintf("/net-services/loadbalancing/details/http/%s-lb-url-map?project=%s", prefix, projectID)
-		// 	assert.Equal(expected, got, "console page: expected (%s) got (%s)", expected, got)
-
-		// 	ip := example.GetStringOutput("endpoint")
-		// 	val := net.ParseIP(ip)
-		// 	assert.NotNil(val, "endpoint: expected (%s) to be valid IP", ip)
-		// })
 	})
 	example.Test()
 }
