@@ -18,5 +18,6 @@ module "three_tier_app" {
   source = "../.."
 
   project_id  = var.project_id
-  bucket_name = var.bucket_name
+  region = "us-central1"
+  zone = "us-central1-a"
 }

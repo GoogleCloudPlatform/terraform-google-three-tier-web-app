@@ -18,11 +18,18 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
+provider "google" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+
+
 locals {
   sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   sacompute = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
-  api_image = "us-central1-docker.pkg.dev/sic-container-repo/todo-app/api"
-  fe_image = "us-central1-docker.pkg.dev/sic-container-repo/todo-app/fe"
+  api_image = "gcr.io/sic-container-repo/todo-api"
+  fe_image  = "gcr.io/sic-container-repo/todo-fe"
 }
 
 
@@ -104,6 +111,7 @@ resource "google_service_networking_connection" "main" {
   network                 = google_compute_network.main.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.main.name]
+  depends_on              = [module.project-services]
 }
 
 resource "google_vpc_access_connector" "main" {
@@ -141,9 +149,10 @@ resource "google_sql_database_instance" "main" {
       zone = var.zone
     }
   }
-  deletion_protection = true
+  deletion_protection = false
   depends_on = [
-    module.project-services,
+    module.project-services, 
+    google_vpc_access_connector.main, 
     google_service_networking_connection.main
   ]
 
@@ -200,9 +209,8 @@ resource "google_secret_manager_secret" "redishost" {
 
 resource "google_secret_manager_secret_version" "redishost" {
   enabled     = true
-  secret      = "projects/${data.google_project.project.number}/secrets/redishost"
+  secret      = google_secret_manager_secret.redishost.id
   secret_data = google_redis_instance.main.host
-  depends_on  = [module.project-services, google_redis_instance.main, google_secret_manager_secret.redishost]
 }
 
 resource "google_secret_manager_secret" "sqlhost" {
@@ -216,9 +224,8 @@ resource "google_secret_manager_secret" "sqlhost" {
 
 resource "google_secret_manager_secret_version" "sqlhost" {
   enabled     = true
-  secret      = "projects/${data.google_project.project.number}/secrets/sqlhost"
+  secret      = google_secret_manager_secret.sqlhost.id
   secret_data = google_sql_database_instance.main.private_ip_address
-  depends_on  = [google_sql_database_instance.main, google_secret_manager_secret.sqlhost]
 }
 
 resource "google_secret_manager_secret" "todo_user" {
@@ -231,9 +238,8 @@ resource "google_secret_manager_secret" "todo_user" {
 }
 resource "google_secret_manager_secret_version" "todo_user" {
   enabled     = true
-  secret      = "projects/${data.google_project.project.number}/secrets/todo_user"
+  secret      = google_secret_manager_secret.todo_user.id
   secret_data = "todo_user"
-  depends_on = [google_secret_manager_secret.todo_user]
 }
 
 resource "google_secret_manager_secret" "todo_pass" {
@@ -246,9 +252,8 @@ resource "google_secret_manager_secret" "todo_pass" {
 }
 resource "google_secret_manager_secret_version" "todo_pass" {
   enabled     = true
-  secret      = "projects/${data.google_project.project.number}/secrets/todo_pass"
+  secret      = google_secret_manager_secret.todo_pass.id
   secret_data = google_sql_user.main.password
-   depends_on = [google_secret_manager_secret.todo_pass]
 }
 
 
@@ -291,7 +296,7 @@ resource "google_cloud_run_service" "api" {
           }
         }
 
-         env {
+        env {
           name = "todo_pass"
           value_from {
             secret_key_ref {
@@ -324,11 +329,7 @@ resource "google_cloud_run_service" "api" {
     }
   }
   autogenerate_revision_name = true
-  depends_on = [
-    google_project_iam_member.secretmanager_secretAccessor,
-    google_secret_manager_secret_version.todo_pass,
-    google_secret_manager_secret_version.todo_user,
-  ]
+   depends_on = [google_secret_manager_secret_version.todo_pass]
 }
 
 resource "google_cloud_run_service" "fe" {
