@@ -15,8 +15,9 @@ module "three_tier_app" {
   source  = "terraform-google-modules/three-tier-app/google"
   version = "~> 0.1"
 
-  project_id  = "<PROJECT ID>"
-  bucket_name = "gcs-test-bucket"
+  project_id  = var.project_id
+  region = "us-central1"
+  zone = "us-central1-a"
 }
 ```
 
