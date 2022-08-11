@@ -27,7 +27,6 @@ provider "google" {
 
 locals {
   sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
-  sacompute = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
   api_image = "gcr.io/sic-container-repo/todo-api"
   fe_image  = "gcr.io/sic-container-repo/todo-fe"
 }
@@ -78,12 +77,23 @@ resource "google_project_iam_member" "allbuild" {
   depends_on = [module.project-services]
 }
 
-resource "google_project_iam_member" "secretmanager_secretAccessor" {
-  project    = var.project_id
-  role       = "roles/secretmanager.secretAccessor"
-  member     = "serviceAccount:${local.sacompute}"
+
+resource "google_service_account" "runsa" {
+  account_id   = "${var.deployment_name}-run-sa"
+  display_name = "Service Account for Cloud Run"
+}
+
+
+
+resource "google_project_iam_member" "allrun" {
+  project    = data.google_project.project.number
+  role       =  "roles/secretmanager.secretAccessor"
+  member     = "serviceAccount:${google_service_account.runsa.email}"
   depends_on = [module.project-services]
 }
+
+
+
 
 
 resource "google_compute_network" "main" {
@@ -272,9 +282,11 @@ resource "google_cloud_run_service" "api" {
   provider = google-beta
   location = var.region
   project  = var.project_id
+  
 
   template {
     spec {
+      service_account_name = google_service_account.runsa.email
       containers {
         image = local.api_image
         env {
@@ -343,7 +355,7 @@ resource "google_cloud_run_service" "api" {
     labels = var.labels
   }
   autogenerate_revision_name = true
-  depends_on                 = [google_secret_manager_secret_version.todo_pass]
+  depends_on                 = [google_project_iam_member.allrun]
 }
 
 
@@ -354,6 +366,7 @@ resource "google_cloud_run_service" "fe" {
 
   template {
     spec {
+      service_account_name = google_service_account.runsa.email
       containers {
         image = local.fe_image
         ports {
@@ -371,26 +384,20 @@ resource "google_cloud_run_service" "fe" {
   }
 }
 
-data "google_iam_policy" "noauth" {
-  binding {
-    role = "roles/run.invoker"
-    members = [
-      "allUsers",
-    ]
-  }
-}
 
-
-resource "google_cloud_run_service_iam_policy" "noauth_api" {
+resource "google_cloud_run_service_iam_member" "noauth_api" {
   location    = google_cloud_run_service.api.location
   project     = google_cloud_run_service.api.project
   service     = google_cloud_run_service.api.name
-  policy_data = data.google_iam_policy.noauth.policy_data
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
-resource "google_cloud_run_service_iam_policy" "noauth_fe" {
+resource "google_cloud_run_service_iam_member" "noauth_fe" {
   location    = google_cloud_run_service.fe.location
   project     = google_cloud_run_service.fe.project
   service     = google_cloud_run_service.fe.name
-  policy_data = data.google_iam_policy.noauth.policy_data
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
+

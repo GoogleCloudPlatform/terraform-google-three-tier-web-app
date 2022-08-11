@@ -29,15 +29,9 @@ func TestSimpleExample(t *testing.T) {
 
 	sqlname := example.GetStringOutput("sqlservername")
 	projectID := example.GetTFSetupStringOutput("project_id")
-	projectNumber := "929625475928"
+	projectNumber := example.GetTFSetupStringOutput("project_number")
 	prefix := "three-tier-app"
 	region := "us-central1"
-	// zone := "us-central1-a"
-
-	_ = projectNumber
-	_ = region
-	_ = prefix
-	_ = sqlname
 
 	example.DefineVerify(func(assert *assert.Assertions) {
 		example.DefaultVerify(assert)
