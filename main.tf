@@ -87,7 +87,7 @@ resource "google_service_account" "runsa" {
 
 resource "google_project_iam_member" "allrun" {
   project    = data.google_project.project.number
-  role       =  "roles/secretmanager.secretAccessor"
+  role       = "roles/secretmanager.secretAccessor"
   member     = "serviceAccount:${google_service_account.runsa.email}"
   depends_on = [module.project-services]
 }
@@ -282,7 +282,7 @@ resource "google_cloud_run_service" "api" {
   provider = google-beta
   location = var.region
   project  = var.project_id
-  
+
 
   template {
     spec {
@@ -355,7 +355,15 @@ resource "google_cloud_run_service" "api" {
     labels = var.labels
   }
   autogenerate_revision_name = true
-  depends_on                 = [google_project_iam_member.allrun]
+  # I know, implicit dependencies. But I got flaky tests cause stuff didn't
+  # exist yet. So explicit dependencies is what you get. 
+  depends_on = [
+    google_project_iam_member.allrun,
+    google_secret_manager_secret_version.sqlhost,
+    google_secret_manager_secret_version.redishost,
+    google_secret_manager_secret_version.todo_pass,
+    google_secret_manager_secret_version.todo_user
+  ]
 }
 
 
@@ -386,17 +394,17 @@ resource "google_cloud_run_service" "fe" {
 
 
 resource "google_cloud_run_service_iam_member" "noauth_api" {
-  location    = google_cloud_run_service.api.location
-  project     = google_cloud_run_service.api.project
-  service     = google_cloud_run_service.api.name
+  location = google_cloud_run_service.api.location
+  project  = google_cloud_run_service.api.project
+  service  = google_cloud_run_service.api.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
 
 resource "google_cloud_run_service_iam_member" "noauth_fe" {
-  location    = google_cloud_run_service.fe.location
-  project     = google_cloud_run_service.fe.project
-  service     = google_cloud_run_service.fe.name
+  location = google_cloud_run_service.fe.location
+  project  = google_cloud_run_service.fe.project
+  service  = google_cloud_run_service.fe.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
