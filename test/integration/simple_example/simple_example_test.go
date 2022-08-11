@@ -27,14 +27,13 @@ import (
 func TestSimpleExample(t *testing.T) {
 	example := tft.NewTFBlueprintTest(t)
 
-	sqlname := example.GetStringOutput("sqlservername")
-	projectID := example.GetTFSetupStringOutput("project_id")
-	projectNumber := example.GetTFSetupStringOutput("project_number")
-	prefix := "three-tier-app"
-	region := "us-central1"
-
 	example.DefineVerify(func(assert *assert.Assertions) {
 		example.DefaultVerify(assert)
+		sqlname := example.GetStringOutput("sqlservername")
+		projectID := example.GetTFSetupStringOutput("project_id")
+		projectNumber := example.GetTFSetupStringOutput("project_number")
+		prefix := "three-tier-app"
+		region := "us-central1"
 
 		labelTests := map[string]struct {
 			subsection string
