@@ -7,14 +7,14 @@ This example illustrates how to use the `three-tier-app` module.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_name | The name of the bucket to create. | `string` | n/a | yes |
 | project\_id | The ID of the project in which to provision resources. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| bucket\_name | The name of the bucket. |
+| endpoint | The url of the front end which we want to surface to the user |
+| sqlservername | The name of the database that we randomly generated. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
