@@ -194,7 +194,7 @@ resource "google_sql_user" "main" {
   instance = google_sql_database_instance.main.name
 }
 
-# Looked at using the module, but there doesn't seem to be a huge win there. 
+# Looked at using the module, but there doesn't seem to be a huge win there.
 # Handle redis instance
 resource "google_redis_instance" "main" {
   authorized_network      = google_compute_network.main.id
@@ -356,7 +356,7 @@ resource "google_cloud_run_service" "api" {
   }
   autogenerate_revision_name = true
   # I know, implicit dependencies. But I got flaky tests cause stuff didn't
-  # exist yet. So explicit dependencies is what you get. 
+  # exist yet. So explicit dependencies is what you get.
   depends_on = [
     google_project_iam_member.allrun,
     google_secret_manager_secret_version.sqlhost,

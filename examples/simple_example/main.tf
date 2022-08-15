@@ -17,7 +17,7 @@
 module "three_tier_app" {
   source = "../.."
 
-  project_id  = var.project_id
-  region = "us-central1"
-  zone = "us-central1-a"
+  project_id = var.project_id
+  region     = "us-central1"
+  zone       = "us-central1-a"
 }
