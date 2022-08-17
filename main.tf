@@ -99,7 +99,7 @@ module "network-safer-mysql-simple" {
   project_id   = var.project_id
   network_name = "${var.deployment_name}-network"
 
-  subnets = []  
+  subnets = []
   depends_on = [
     module.project-services
   ]
@@ -175,7 +175,7 @@ resource "google_sql_user" "main" {
   project  = var.project_id
   name     = "todo_user"
   password = random_password.password.result
-  instance =  google_sql_database_instance.main.name
+  instance = google_sql_database_instance.main.name
 }
 
 # Looked at using the module, but there doesn't seem to be a huge win there.
@@ -204,7 +204,7 @@ module "secret-manager" {
   project_id = var.project_id
   labels = {
     redishost = var.labels,
-    sqlhost = var.labels,
+    sqlhost   = var.labels,
     todo_user = var.labels,
     todo_pass = var.labels
   }
@@ -217,7 +217,7 @@ module "secret-manager" {
     {
       name                  = "sqlhost"
       automatic_replication = true
-      secret_data           =  google_sql_database_instance.main.ip_address.0.ip_address
+      secret_data           = google_sql_database_instance.main.ip_address.0.ip_address
     },
     {
       name                  = "todo_user"
@@ -267,7 +267,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_user"
           value_from {
             secret_key_ref {
-              name =  "todo_user" 
+              name = "todo_user"
               key  = "latest"
             }
           }
@@ -277,7 +277,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_pass"
           value_from {
             secret_key_ref {
-              name =  "todo_pass" 
+              name = "todo_pass"
               key  = "latest"
             }
           }
