@@ -18,10 +18,12 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-module "sql-db" {
-  source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-  version = "8.0.0"
-}
+# module "sql-db" {
+#   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
+#   version = "12.0.0"
+#   project_id = var.project_id
+#   database_version     = "MYSQL_5_7"
+# }
 
 # TODO: DELETE if passes test. 
 # provider "google" {
@@ -108,7 +110,10 @@ module "network-safer-mysql-simple" {
   project_id   = var.project_id
   network_name = "${var.deployment_name}-network"
 
-  subnets = []
+  subnets = []  
+  depends_on = [
+    module.project-services
+  ]
 }
 
 # resource "google_compute_network" "main" {
@@ -126,6 +131,9 @@ module "private-service-access" {
   source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
   project_id  = var.project_id
   vpc_network = module.network-safer-mysql-simple.network_name
+  depends_on = [
+    module.project-services
+  ]
 }
 
 
@@ -157,7 +165,7 @@ resource "google_vpc_access_connector" "main" {
   network        = module.network-safer-mysql-simple.network_name
   region         = var.region
   max_throughput = 300
-  depends_on     = [google_compute_global_address.main, module.project-services]
+  depends_on     = [module.project-services]
 }
 
 resource "random_id" "id" {
@@ -166,26 +174,30 @@ resource "random_id" "id" {
 
 
 
-module "mysql" {
-  source               = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-  name                 = "${var.deployment_name}-db-${random_id.id.hex}"
-  random_instance_name = false
-  database_version     = "MYSQL_5_7"
-  project_id           = var.project_id
-  region               = var.region
-  zone                 = var.zone
-  deletion_protection  = false
-  tier                 = "db-g1-small"
-  user_labels          = var.labels
+# module "mysql" {
+#   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
+#   version = "12.0.0"
+#   name                 = "${var.deployment_name}-db-${random_id.id.hex}"
+#   random_instance_name = false
+#   database_version     = "MYSQL_5_7"
+#   project_id           = var.project_id
+#   region               = var.region
+#   zone                 = var.zone
+#   deletion_protection  = false
+#   tier                 = "db-g1-small"
+#   user_labels          = var.labels
 
-  ip_configuration = {
-    ipv4_enabled    = false
-    private_network = module.network-safer-mysql-simple.network_self_link
-    # require_ssl         = true
-    # allocated_ip_range  = null
-    # authorized_networks = []
-  }
-}
+#   ip_configuration = {
+#     ipv4_enabled    = false
+#     private_network = module.network-safer-mysql-simple.network_self_link
+#     require_ssl         = true
+#     allocated_ip_range  = null
+#     authorized_networks = []
+#   }
+#   depends_on = [
+#     module.project-services
+#   ]
+# }
 
 # module "safer-mysql-db" {
 #   source               = "GoogleCloudPlatform/sql-db/google//modules/safer_mysql"
@@ -226,41 +238,40 @@ module "mysql" {
 # }
 
 # Handle Database
-# resource "google_sql_database_instance" "main" {
-#   name             = "${var.deployment_name}-db-${random_id.id.hex}-2"
-#   database_version = "MYSQL_5_7"
-#   region           = var.region
-#   project          = var.project_id
+resource "google_sql_database_instance" "main" {
+  name             = "${var.deployment_name}-db-${random_id.id.hex}"
+  database_version = "MYSQL_5_7"
+  region           = var.region
+  project          = var.project_id
 
-#   settings {
-#     tier                  = "db-g1-small"
-#     disk_autoresize       = true
-#     disk_autoresize_limit = 0
-#     disk_size             = 10
-#     disk_type             = "PD_SSD"
-#     user_labels           = var.labels
-#     ip_configuration {
-#       ipv4_enabled    = false
-#       private_network = module.network-safer-mysql-simple.network_name
-#     }
-#     location_preference {
-#       zone = var.zone
-#     }
-#   }
-#   deletion_protection = false
-#   depends_on = [
-#     module.project-services,
-#     google_vpc_access_connector.main,
-#     google_service_networking_connection.main
-#   ]
+  settings {
+    tier                  = "db-g1-small"
+    disk_autoresize       = true
+    disk_autoresize_limit = 0
+    disk_size             = 10
+    disk_type             = "PD_SSD"
+    user_labels           = var.labels
+    ip_configuration {
+      ipv4_enabled    = false
+      private_network = module.network-safer-mysql-simple.network_self_link
+    }
+    location_preference {
+      zone = var.zone
+    }
+  }
+  deletion_protection = false
+  depends_on = [
+    module.project-services,
+    google_vpc_access_connector.main,
+  ]
 
 
-# }
+}
 
 resource "google_sql_database" "database" {
   project  = var.project_id
   name     = "todo"
-  instance = module.mysql.instance_name
+  instance = google_sql_database_instance.main.name
 }
 
 
@@ -275,7 +286,7 @@ resource "google_sql_user" "main" {
   project  = var.project_id
   name     = "todo_user"
   password = random_password.password.result
-  instance = google_sql_database_instance.main.name
+  instance =  google_sql_database_instance.main.name
 }
 
 # Looked at using the module, but there doesn't seem to be a huge win there.
@@ -311,7 +322,7 @@ module "secret-manager" {
     {
       name                  = "sqlhost"
       automatic_replication = true
-      secret_data           = google_sql_database_instance.main.private_ip_address
+      secret_data           =  google_sql_database_instance.main.ip_address.0.ip_address
     },
     {
       name                  = "todo_user"
@@ -407,7 +418,7 @@ resource "google_cloud_run_service" "api" {
           name = "REDISHOST"
           value_from {
             secret_key_ref {
-              name = module.secret-manager.secret_names["redishost"]
+              name = "redishost"
               key  = "latest"
             }
           }
@@ -416,7 +427,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_host"
           value_from {
             secret_key_ref {
-              name = module.secret-manager.secret_names["sqlhost"]
+              name = "sqlhost"
               key  = "latest"
             }
           }
@@ -426,7 +437,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_user"
           value_from {
             secret_key_ref {
-              name = module.secret-manager.secret_names["todo_user"]
+              name =  "todo_user" 
               key  = "latest"
             }
           }
@@ -436,7 +447,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_pass"
           value_from {
             secret_key_ref {
-              name = module.secret-manager.secret_names["todo_pass"]
+              name =  "todo_pass" 
               key  = "latest"
             }
           }
