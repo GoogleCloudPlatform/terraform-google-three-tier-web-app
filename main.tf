@@ -18,12 +18,6 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-# module "sql-db" {
-#   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-#   version = "12.0.0"
-#   project_id = var.project_id
-#   database_version     = "MYSQL_5_7"
-# }
 
 # TODO: DELETE if passes test. 
 # provider "google" {
@@ -85,14 +79,11 @@ resource "google_project_iam_member" "allbuild" {
   depends_on = [module.project-services]
 }
 
-
 resource "google_service_account" "runsa" {
   project      = var.project_id
   account_id   = "${var.deployment_name}-run-sa"
   display_name = "Service Account for Cloud Run"
 }
-
-
 
 resource "google_project_iam_member" "allrun" {
   project    = data.google_project.project.number
@@ -100,8 +91,6 @@ resource "google_project_iam_member" "allrun" {
   member     = "serviceAccount:${google_service_account.runsa.email}"
   depends_on = [module.project-services]
 }
-
-
 
 module "network-safer-mysql-simple" {
   source  = "terraform-google-modules/network/google"
@@ -116,17 +105,6 @@ module "network-safer-mysql-simple" {
   ]
 }
 
-# resource "google_compute_network" "main" {
-#   provider                = google-beta
-#   name                    = "${var.deployment_name}-network"
-#   auto_create_subnetworks = false
-#   project                 = var.project_id
-#   depends_on = [
-#     module.project-services
-#   ]
-# }
-
-
 module "private-service-access" {
   source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
   project_id  = var.project_id
@@ -135,27 +113,6 @@ module "private-service-access" {
     module.project-services
   ]
 }
-
-
-# # Handle Networking details
-# resource "google_compute_global_address" "main" {
-#   name          = "${var.deployment_name}-vpc-address"
-#   provider      = google-beta
-#   labels        = var.labels
-#   purpose       = "VPC_PEERING"
-#   address_type  = "INTERNAL"
-#   prefix_length = 16
-#   network       = google_compute_network.main.id
-#   project       = var.project_id
-#   depends_on    = [module.project-services]
-# }
-
-# resource "google_service_networking_connection" "main" {
-#   network                 = google_compute_network.main.id
-#   service                 = "servicenetworking.googleapis.com"
-#   reserved_peering_ranges = [google_compute_global_address.main.name]
-#   depends_on              = [module.project-services]
-# }
 
 resource "google_vpc_access_connector" "main" {
   provider       = google-beta
@@ -171,71 +128,6 @@ resource "google_vpc_access_connector" "main" {
 resource "random_id" "id" {
   byte_length = 2
 }
-
-
-
-# module "mysql" {
-#   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-#   version = "12.0.0"
-#   name                 = "${var.deployment_name}-db-${random_id.id.hex}"
-#   random_instance_name = false
-#   database_version     = "MYSQL_5_7"
-#   project_id           = var.project_id
-#   region               = var.region
-#   zone                 = var.zone
-#   deletion_protection  = false
-#   tier                 = "db-g1-small"
-#   user_labels          = var.labels
-
-#   ip_configuration = {
-#     ipv4_enabled    = false
-#     private_network = module.network-safer-mysql-simple.network_self_link
-#     require_ssl         = true
-#     allocated_ip_range  = null
-#     authorized_networks = []
-#   }
-#   depends_on = [
-#     module.project-services
-#   ]
-# }
-
-# module "safer-mysql-db" {
-#   source               = "GoogleCloudPlatform/sql-db/google//modules/safer_mysql"
-#   name                 = "${var.deployment_name}-db-${random_id.id.hex}"
-#   random_instance_name = false
-#   project_id           = var.project_id
-
-#   deletion_protection = false
-
-#   database_version = "MYSQL_5_7"
-#   region           = var.region
-#   zone             = var.zone
-#   tier                  = "db-g1-small"
-
-#   // By default, all users will be permitted to connect only via the
-#   // Cloud SQL proxy.
-#   additional_users = [
-#     {
-#       name     = "app"
-#       password = "PaSsWoRd"
-#       host     = "localhost"
-#       type     = "BUILT_IN"
-#     },
-#     {
-#       name     = "readonly"
-#       password = "PaSsWoRd"
-#       host     = "localhost"
-#       type     = "BUILT_IN"
-#     },
-#   ]
-
-#   assign_public_ip   = "true"
-#   vpc_network        = module.network-safer-mysql-simple.network_self_link
-#   allocated_ip_range = module.private-service-access.google_compute_global_address_name
-
-#   // Optional: used to enforce ordering in the creation of resources.
-#   module_depends_on = [module.private-service-access.peering_completed]
-# }
 
 # Handle Database
 resource "google_sql_database_instance" "main" {
@@ -264,8 +156,6 @@ resource "google_sql_database_instance" "main" {
     module.project-services,
     google_vpc_access_connector.main,
   ]
-
-
 }
 
 resource "google_sql_database" "database" {
@@ -273,7 +163,6 @@ resource "google_sql_database" "database" {
   name     = "todo"
   instance = google_sql_database_instance.main.name
 }
-
 
 
 resource "random_password" "password" {
@@ -313,6 +202,12 @@ module "secret-manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
   version    = "~> 0.1"
   project_id = var.project_id
+  labels = {
+    redishost = var.labels,
+    sqlhost = var.labels,
+    todo_user = var.labels,
+    todo_pass = var.labels
+  }
   secrets = [
     {
       name                  = "redishost"
@@ -332,75 +227,10 @@ module "secret-manager" {
     {
       name                  = "todo_pass"
       automatic_replication = true
-      secret_data           = data.google_project.project.number
+      secret_data           = google_sql_user.main.password
     },
   ]
 }
-
-
-# Handle secrets
-# resource "google_secret_manager_secret" "redishost" {
-#   project = data.google_project.project.number
-#   labels  = var.labels
-#   replication {
-#     automatic = true
-#   }
-#   secret_id  = "redishost"
-#   depends_on = [module.project-services]
-# }
-
-# resource "google_secret_manager_secret_version" "redishost" {
-#   enabled     = true
-#   secret      = google_secret_manager_secret.redishost.id
-#   secret_data = google_redis_instance.main.host
-# }
-
-# resource "google_secret_manager_secret" "sqlhost" {
-#   project = data.google_project.project.number
-#   labels  = var.labels
-#   replication {
-#     automatic = true
-#   }
-#   secret_id  = "sqlhost"
-#   depends_on = [module.project-services]
-# }
-
-# resource "google_secret_manager_secret_version" "sqlhost" {
-#   enabled     = true
-#   secret      = google_secret_manager_secret.sqlhost.id
-#   secret_data = google_sql_database_instance.main.private_ip_address
-# }
-
-# resource "google_secret_manager_secret" "todo_user" {
-#   labels  = var.labels
-#   project = data.google_project.project.number
-#   replication {
-#     automatic = true
-#   }
-#   secret_id  = "todo_user"
-#   depends_on = [module.project-services]
-# }
-# resource "google_secret_manager_secret_version" "todo_user" {
-#   enabled     = true
-#   secret      = google_secret_manager_secret.todo_user.id
-#   secret_data = "todo_user"
-# }
-
-# resource "google_secret_manager_secret" "todo_pass" {
-#   labels  = var.labels
-#   project = data.google_project.project.number
-#   replication {
-#     automatic = true
-#   }
-#   secret_id  = "todo_pass"
-#   depends_on = [module.project-services]
-# }
-# resource "google_secret_manager_secret_version" "todo_pass" {
-#   enabled     = true
-#   secret      = google_secret_manager_secret.todo_pass.id
-#   secret_data = google_sql_user.main.password
-# }
-
 
 resource "google_cloud_run_service" "api" {
   name     = "${var.deployment_name}-api"
@@ -487,6 +317,7 @@ resource "google_cloud_run_service" "api" {
     module.secret-manager
   ]
 }
+
 
 
 resource "google_cloud_run_service" "fe" {

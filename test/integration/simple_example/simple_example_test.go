@@ -83,7 +83,7 @@ func TestSimpleExample(t *testing.T) {
 			"Existence: Redis":            {subsection: "redis instances", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/instances/%s-cache", projectID, region, prefix)},
 			"Existence: SQL":              {subsection: "sql instances", field: "name", global: false, region: false, expected: sqlname},
 			"Existence: VPN Connector":    {subsection: "compute networks vpc-access connectors", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/connectors/%s-vpc-cx", projectID, region, prefix)},
-			"Existence: VPN Address":      {subsection: "compute addresses", field: "name", global: true, region: false, expected: fmt.Sprintf("%s-vpc-address", prefix)},
+			"Existence: VPN Address":      {subsection: "compute addresses", field: "name", global: true, region: false, expected: fmt.Sprintf("google-managed-services-%s-network", prefix)},
 		}
 
 		for name, tc := range existenceTests {
