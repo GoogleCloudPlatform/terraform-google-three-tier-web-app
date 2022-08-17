@@ -55,27 +55,6 @@ module "project-services" {
   ]
 }
 
-# TODO: See if this can be modularized
-# Handle Permissions
-variable "build_roles_list" {
-  description = "The list of roles that build needs for"
-  type        = list(string)
-  default = [
-    "roles/run.developer",
-    "roles/vpaccess.user",
-    "roles/iam.serviceAccountUser",
-    "roles/run.admin",
-    "roles/secretmanager.secretAccessor",
-  ]
-}
-
-resource "google_project_iam_member" "allbuild" {
-  for_each   = toset(var.build_roles_list)
-  project    = data.google_project.project.number
-  role       = each.key
-  member     = "serviceAccount:${local.sabuild}"
-  depends_on = [module.project-services]
-}
 
 
 resource "google_service_account" "runsa" {
