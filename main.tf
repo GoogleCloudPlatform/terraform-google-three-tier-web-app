@@ -18,15 +18,6 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-
-# TODO: DELETE if passes test. 
-# provider "google" {
-#   project = var.project_id
-#   region  = var.region
-#   zone    = var.zone
-# }
-
-
 locals {
   sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   api_image = "gcr.io/sic-container-repo/todo-api"
