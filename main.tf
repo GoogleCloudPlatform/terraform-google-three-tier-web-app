@@ -48,7 +48,6 @@ module "project-services" {
   ]
 }
 
-
 resource "google_service_account" "runsa" {
   project      = var.project_id
   account_id   = "${var.deployment_name}-run-sa"
