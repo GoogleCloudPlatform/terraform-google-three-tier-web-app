@@ -18,13 +18,6 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-  zone    = var.zone
-}
-
-
 locals {
   sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   api_image = "gcr.io/sic-container-repo/todo-api"
@@ -55,14 +48,11 @@ module "project-services" {
   ]
 }
 
-
-
 resource "google_service_account" "runsa" {
+  project      = var.project_id
   account_id   = "${var.deployment_name}-run-sa"
   display_name = "Service Account for Cloud Run"
 }
-
-
 
 resource "google_project_iam_member" "allrun" {
   project    = data.google_project.project.number
@@ -71,38 +61,26 @@ resource "google_project_iam_member" "allrun" {
   depends_on = [module.project-services]
 }
 
+module "network-safer-mysql-simple" {
+  source  = "terraform-google-modules/network/google"
+  version = "~> 4.0"
 
+  project_id   = var.project_id
+  network_name = "${var.deployment_name}-network"
 
-
-
-resource "google_compute_network" "main" {
-  provider                = google-beta
-  name                    = "${var.deployment_name}-network"
-  auto_create_subnetworks = false
-  project                 = var.project_id
+  subnets = []
   depends_on = [
     module.project-services
   ]
 }
 
-# # Handle Networking details
-resource "google_compute_global_address" "main" {
-  name          = "${var.deployment_name}-vpc-address"
-  provider      = google-beta
-  labels        = var.labels
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = google_compute_network.main.id
-  project       = var.project_id
-  depends_on    = [module.project-services]
-}
-
-resource "google_service_networking_connection" "main" {
-  network                 = google_compute_network.main.id
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.main.name]
-  depends_on              = [module.project-services]
+module "private-service-access" {
+  source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
+  project_id  = var.project_id
+  vpc_network = module.network-safer-mysql-simple.network_name
+  depends_on = [
+    module.project-services
+  ]
 }
 
 resource "google_vpc_access_connector" "main" {
@@ -110,10 +88,10 @@ resource "google_vpc_access_connector" "main" {
   project        = var.project_id
   name           = "${var.deployment_name}-vpc-cx"
   ip_cidr_range  = "10.8.0.0/28"
-  network        = google_compute_network.main.id
+  network        = module.network-safer-mysql-simple.network_name
   region         = var.region
   max_throughput = 300
-  depends_on     = [google_compute_global_address.main, module.project-services]
+  depends_on     = [module.project-services]
 }
 
 resource "random_id" "id" {
@@ -122,7 +100,7 @@ resource "random_id" "id" {
 
 # Handle Database
 resource "google_sql_database_instance" "main" {
-  name             = "${var.deployment_name}-db-${random_id.id.hex}-2"
+  name             = "${var.deployment_name}-db-${random_id.id.hex}"
   database_version = "MYSQL_5_7"
   region           = var.region
   project          = var.project_id
@@ -136,7 +114,7 @@ resource "google_sql_database_instance" "main" {
     user_labels           = var.labels
     ip_configuration {
       ipv4_enabled    = false
-      private_network = google_compute_network.main.id
+      private_network = module.network-safer-mysql-simple.network_self_link
     }
     location_preference {
       zone = var.zone
@@ -146,10 +124,7 @@ resource "google_sql_database_instance" "main" {
   depends_on = [
     module.project-services,
     google_vpc_access_connector.main,
-    google_service_networking_connection.main
   ]
-
-
 }
 
 resource "google_sql_database" "database" {
@@ -157,7 +132,6 @@ resource "google_sql_database" "database" {
   name     = "todo"
   instance = google_sql_database_instance.main.name
 }
-
 
 
 resource "random_password" "password" {
@@ -176,7 +150,7 @@ resource "google_sql_user" "main" {
 # Looked at using the module, but there doesn't seem to be a huge win there.
 # Handle redis instance
 resource "google_redis_instance" "main" {
-  authorized_network      = google_compute_network.main.id
+  authorized_network      = module.network-safer-mysql-simple.network_name
   connect_mode            = "DIRECT_PEERING"
   location_id             = var.zone
   memory_size_gb          = 1
@@ -192,69 +166,40 @@ resource "google_redis_instance" "main" {
 }
 
 
-# Handle secrets
-resource "google_secret_manager_secret" "redishost" {
-  project = data.google_project.project.number
-  labels  = var.labels
-  replication {
-    automatic = true
+
+module "secret-manager" {
+  source     = "GoogleCloudPlatform/secret-manager/google"
+  version    = "~> 0.1"
+  project_id = var.project_id
+  labels = {
+    redishost = var.labels,
+    sqlhost   = var.labels,
+    todo_user = var.labels,
+    todo_pass = var.labels
   }
-  secret_id  = "redishost"
-  depends_on = [module.project-services]
+  secrets = [
+    {
+      name                  = "redishost"
+      automatic_replication = true
+      secret_data           = google_redis_instance.main.host
+    },
+    {
+      name                  = "sqlhost"
+      automatic_replication = true
+      secret_data           = google_sql_database_instance.main.ip_address.0.ip_address
+    },
+    {
+      name                  = "todo_user"
+      automatic_replication = true
+      secret_data           = "todo_user"
+    },
+    {
+      name                  = "todo_pass"
+      automatic_replication = true
+      secret_data           = google_sql_user.main.password
+    },
+  ]
 }
-
-resource "google_secret_manager_secret_version" "redishost" {
-  enabled     = true
-  secret      = google_secret_manager_secret.redishost.id
-  secret_data = google_redis_instance.main.host
-}
-
-resource "google_secret_manager_secret" "sqlhost" {
-  project = data.google_project.project.number
-  labels  = var.labels
-  replication {
-    automatic = true
-  }
-  secret_id  = "sqlhost"
-  depends_on = [module.project-services]
-}
-
-resource "google_secret_manager_secret_version" "sqlhost" {
-  enabled     = true
-  secret      = google_secret_manager_secret.sqlhost.id
-  secret_data = google_sql_database_instance.main.private_ip_address
-}
-
-resource "google_secret_manager_secret" "todo_user" {
-  labels  = var.labels
-  project = data.google_project.project.number
-  replication {
-    automatic = true
-  }
-  secret_id  = "todo_user"
-  depends_on = [module.project-services]
-}
-resource "google_secret_manager_secret_version" "todo_user" {
-  enabled     = true
-  secret      = google_secret_manager_secret.todo_user.id
-  secret_data = "todo_user"
-}
-
-resource "google_secret_manager_secret" "todo_pass" {
-  labels  = var.labels
-  project = data.google_project.project.number
-  replication {
-    automatic = true
-  }
-  secret_id  = "todo_pass"
-  depends_on = [module.project-services]
-}
-resource "google_secret_manager_secret_version" "todo_pass" {
-  enabled     = true
-  secret      = google_secret_manager_secret.todo_pass.id
-  secret_data = google_sql_user.main.password
-}
-
 
 resource "google_cloud_run_service" "api" {
   name     = "${var.deployment_name}-api"
@@ -272,7 +217,7 @@ resource "google_cloud_run_service" "api" {
           name = "REDISHOST"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.redishost.secret_id
+              name = "redishost"
               key  = "latest"
             }
           }
@@ -281,7 +226,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_host"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.sqlhost.secret_id
+              name = "sqlhost"
               key  = "latest"
             }
           }
@@ -291,7 +236,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_user"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.todo_user.secret_id
+              name = "todo_user"
               key  = "latest"
             }
           }
@@ -301,7 +246,7 @@ resource "google_cloud_run_service" "api" {
           name = "todo_pass"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.todo_pass.secret_id
+              name = "todo_pass"
               key  = "latest"
             }
           }
@@ -338,12 +283,10 @@ resource "google_cloud_run_service" "api" {
   # exist yet. So explicit dependencies is what you get.
   depends_on = [
     google_project_iam_member.allrun,
-    google_secret_manager_secret_version.sqlhost,
-    google_secret_manager_secret_version.redishost,
-    google_secret_manager_secret_version.todo_pass,
-    google_secret_manager_secret_version.todo_user
+    module.secret-manager
   ]
 }
+
 
 
 resource "google_cloud_run_service" "fe" {

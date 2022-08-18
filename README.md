@@ -29,7 +29,6 @@ Functional examples are included in the
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| build\_roles\_list | The list of roles that build needs for | `list(string)` | <pre>[<br>  "roles/run.developer",<br>  "roles/vpaccess.user",<br>  "roles/iam.serviceAccountUser",<br>  "roles/run.admin",<br>  "roles/secretmanager.secretAccessor"<br>]</pre> | no |
 | deployment\_name | The name of this particular deployment, will get added as a prefix to most resources. | `string` | `"three-tier-app"` | no |
 | enable\_apis | Whether or not to enable underlying apis in this solution. . | `string` | `true` | no |
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
