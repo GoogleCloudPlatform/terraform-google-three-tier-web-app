@@ -8,6 +8,20 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.1](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/compare/v0.1.0...v0.1.1) (2022-10-28)
+
+
+### Bug Fixes
+
+* handle lint formatting. ([41c3bd3](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/41c3bd3ee4a5491c98551e4294a35d72ea864200))
+* remove build roles ([03e8f90](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/03e8f90815cb2f627d6455f98a21bbb69b5ff246)), closes [#5](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/issues/5)
+* remove provider instantion from solution. ([48d2bc9](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/48d2bc92b96c0a079ca2f0b0d32dc6fe74cd090b)), closes [#4](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/issues/4)
+* removing sa build account stuff ([544badb](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/544badb279553a9874f8f3dc7a62048dea418a07))
+* replacing redundant code with modules. ([20fe1c8](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/20fe1c8d00e90db60085c74c7c154ff49da5b3fc))
+* update integration test script ([4e2cefc](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/4e2cefc9598f9b578b23098e0f2b9b77d07f3303)), closes [#3](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/issues/3)
+* updating test in the hope that it will pass now ([07f3b99](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/07f3b99eff64df47b1187d082a7d3402996fc28b))
+* using modules ([28e29e9](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/commit/28e29e9874ba82a4af0f453d4166fb608356cdca))
+
 ## 0.1.0 (2022-08-12)
 
 
