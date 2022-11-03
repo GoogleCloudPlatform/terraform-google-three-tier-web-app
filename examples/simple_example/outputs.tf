@@ -26,7 +26,7 @@ output "sqlservername" {
   description = "The name of the database that we randomly generated."
 }
 
-output "networkname" {
-  value       = module.three_tier_app.networkname
+output "networkName" {
+  value       = module.three_tier_app.networkName
   description = "The name of the network that we randomly generated."
 }

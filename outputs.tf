@@ -22,7 +22,7 @@ output "sqlservername" {
   value       = google_sql_database_instance.main.name
   description = "The name of the database that we randomly generated."
 }
-output "networkname" {
+output "networkName" {
   value       = module.network-safer-mysql-simple.network_name
   description = "The name of the network that we randomly generated."
 }
