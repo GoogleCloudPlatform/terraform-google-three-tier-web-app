@@ -168,19 +168,21 @@ resource "google_sql_database" "database" {
   project  = var.project_id
   name     = "todo"
   instance = google_sql_database_instance.main.name
+  # I know, explicit dependencies. 
+  # But if I didn't put that there, destroy doesn work
+  depends_on = [google_service_account.runsa]
 }
 
-resource "random_password" "password" {
-  length           = 16
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
-}
 
 resource "google_sql_user" "main" {
   project  = var.project_id
   name     = "${google_service_account.runsa.account_id}@${var.project_id}.iam"
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
   instance = google_sql_database_instance.main.name
+  # I know, explicit dependencies. 
+  # But if I didn't put that there, destroy doesn work
+  depends_on = [google_service_account.runsa]
+    
 }
 
 module "secret-manager" {
