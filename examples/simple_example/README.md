@@ -14,6 +14,7 @@ This example illustrates how to use the `three-tier-app` module.
 | Name | Description |
 |------|-------------|
 | endpoint | The url of the front end which we want to surface to the user |
+| networkname | The name of the network that we randomly generated. |
 | sqlservername | The name of the database that we randomly generated. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -34,6 +34,7 @@ Functional examples are included in the
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
 | project\_id | The project ID to deploy to | `any` | n/a | yes |
 | region | The Compute Region to deploy to | `string` | n/a | yes |
+| run\_roles\_list | The list of roles that run needs | `list(string)` | <pre>[<br>  "roles/secretmanager.secretAccessor",<br>  "roles/cloudsql.instanceUser",<br>  "roles/cloudsql.client"<br>]</pre> | no |
 | zone | The Compute Zonbe to deploy to | `string` | n/a | yes |
 
 ## Outputs
@@ -41,7 +42,9 @@ Functional examples are included in the
 | Name | Description |
 |------|-------------|
 | endpoint | The url of the front end which we want to surface to the user |
+| networkname | The name of the network that we randomly generated. |
 | sqlservername | The name of the database that we randomly generated. |
+| test | The name of the network that we randomly generated. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
