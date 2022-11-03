@@ -168,7 +168,7 @@ resource "google_sql_database" "database" {
   project  = var.project_id
   name     = "todo"
   instance = google_sql_database_instance.main.name
-  # I know, explicit dependencies. 
+  # I know, explicit dependencies.
   # But if I didn't put that there, destroy doesn work
   depends_on = [google_service_account.runsa]
 }
@@ -179,10 +179,10 @@ resource "google_sql_user" "main" {
   name     = "${google_service_account.runsa.account_id}@${var.project_id}.iam"
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
   instance = google_sql_database_instance.main.name
-  # I know, explicit dependencies. 
+  # I know, explicit dependencies.
   # But if I didn't put that there, destroy doesn work
   depends_on = [google_service_account.runsa]
-    
+
 }
 
 module "secret-manager" {
@@ -191,9 +191,9 @@ module "secret-manager" {
   project_id = var.project_id
   labels = {
     redis_host = var.labels,
-    db_host   = var.labels,
-    db_user   = var.labels,
-    db_conn   = var.labels,
+    db_host    = var.labels,
+    db_user    = var.labels,
+    db_conn    = var.labels,
   }
   secrets = [
     {
@@ -346,7 +346,3 @@ resource "google_cloud_run_service_iam_member" "noauth_fe" {
   member   = "allUsers"
 }
 
-output "test" {
-  value       = "test"
-  description = "The name of the network that we randomly generated."
-}

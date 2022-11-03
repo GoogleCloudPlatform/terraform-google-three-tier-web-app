@@ -44,7 +44,6 @@ Functional examples are included in the
 | endpoint | The url of the front end which we want to surface to the user |
 | networkname | The name of the network that we randomly generated. |
 | sqlservername | The name of the database that we randomly generated. |
-| test | The name of the network that we randomly generated. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
