@@ -30,6 +30,7 @@ func TestSimpleExample(t *testing.T) {
 	example.DefineVerify(func(assert *assert.Assertions) {
 		example.DefaultVerify(assert)
 		sqlname := example.GetStringOutput("sqlservername")
+		vpnaddress := example.GetStringOutput("networkname")
 		projectID := example.GetTFSetupStringOutput("project_id")
 		projectNumber := example.GetTFSetupStringOutput("project_number")
 		prefix := "three-tier-app"
@@ -42,10 +43,10 @@ func TestSimpleExample(t *testing.T) {
 			region     bool
 			query      string
 		}{
-			"Label: Secret SQLHost":   {subsection: "secrets", global: false, region: false, name: "sqlhost", query: "labels.three-tier-app"},
-			"Label: Secret RedisHost": {subsection: "secrets", global: false, region: false, name: "redishost", query: "labels.three-tier-app"},
-			"Label: Secret todo_user": {subsection: "secrets", global: false, region: false, name: "todo_user", query: "labels.three-tier-app"},
-			"Label: Secret todo_pass": {subsection: "secrets", global: false, region: false, name: "todo_pass", query: "labels.three-tier-app"},
+			"Label: Secret SQLHost":   {subsection: "secrets", global: false, region: false, name: "db_host", query: "labels.three-tier-app"},
+			"Label: Secret RedisHost": {subsection: "secrets", global: false, region: false, name: "redis_host", query: "labels.three-tier-app"},
+			"Label: Secret db_user":   {subsection: "secrets", global: false, region: false, name: "db_user", query: "labels.three-tier-app"},
+			"Label: Secret db_conn":   {subsection: "secrets", global: false, region: false, name: "db_conn", query: "labels.three-tier-app"},
 			"Label: Service api":      {subsection: "run services", global: false, region: true, name: "three-tier-app-api", query: "metadata.labels.three-tier-app"},
 			"Label: Service fe":       {subsection: "run services", global: false, region: true, name: "three-tier-app-fe", query: "metadata.labels.three-tier-app"},
 			"Label: SQL":              {subsection: "sql instances", global: false, region: false, name: sqlname, query: "settings.userLabels.three-tier-app"},
@@ -74,16 +75,16 @@ func TestSimpleExample(t *testing.T) {
 			region     bool
 			expected   string
 		}{
-			"Existence: Secret SQLHost":   {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/sqlhost", projectNumber)},
-			"Existence: Secret RedisHost": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/redishost", projectNumber)},
-			"Existence: Secret todo_user": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/todo_user", projectNumber)},
-			"Existence: Secret todo_pass": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/todo_pass", projectNumber)},
+			"Existence: Secret SQLHost":   {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/db_host", projectNumber)},
+			"Existence: Secret RedisHost": {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/redis_host", projectNumber)},
+			"Existence: Secret db_user":   {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/db_user", projectNumber)},
+			"Existence: Secret db_conn":   {subsection: "secrets", field: "name", global: false, region: false, expected: fmt.Sprintf("projects/%s/secrets/db_conn", projectNumber)},
 			"Existence: Service todo-fe":  {subsection: "run services", field: "metadata.name", global: false, region: true, expected: fmt.Sprintf("%s-fe", prefix)},
 			"Existence: Service todo-api": {subsection: "run services", field: "metadata.name", global: false, region: true, expected: fmt.Sprintf("%s-api", prefix)},
 			"Existence: Redis":            {subsection: "redis instances", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/instances/%s-cache", projectID, region, prefix)},
 			"Existence: SQL":              {subsection: "sql instances", field: "name", global: false, region: false, expected: sqlname},
 			"Existence: VPN Connector":    {subsection: "compute networks vpc-access connectors", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/connectors/%s-vpc-cx", projectID, region, prefix)},
-			"Existence: VPN Address":      {subsection: "compute addresses", field: "name", global: true, region: false, expected: fmt.Sprintf("google-managed-services-%s-network", prefix)},
+			"Existence: VPN Address":      {subsection: "compute addresses", field: "name", global: true, region: false, expected: fmt.Sprintf("google-managed-services-%s", vpnaddress)},
 		}
 
 		for name, tc := range existenceTests {
