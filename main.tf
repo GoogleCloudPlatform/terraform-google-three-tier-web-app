@@ -41,7 +41,6 @@ module "project-services" {
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
-    "secretmanager.googleapis.com",
     "run.googleapis.com",
     "redis.googleapis.com",
   ]
@@ -53,49 +52,38 @@ resource "google_service_account" "runsa" {
   display_name = "Service Account for Cloud Run"
 }
 
-# Handle Permissions
-variable "run_roles_list" {
-  description = "The list of roles that run needs"
-  type        = list(string)
-  default = [
-    "roles/secretmanager.secretAccessor",
-    "roles/cloudsql.instanceUser",
-    "roles/cloudsql.client",
-  ]
-}
-
 resource "google_project_iam_member" "allrun" {
-  for_each   = toset(var.run_roles_list)
-  project    = data.google_project.project.number
-  role       = each.key
-  member     = "serviceAccount:${google_service_account.runsa.email}"
-  depends_on = [module.project-services]
+  for_each = toset(var.run_roles_list)
+  project  = data.google_project.project.number
+  role     = each.key
+  member   = "serviceAccount:${google_service_account.runsa.email}"
 }
 
 resource "random_id" "name" {
   byte_length = 2
 }
 
-module "network-safer-mysql-simple" {
-  source  = "terraform-google-modules/network/google"
-  version = "~> 4.0"
-
-  project_id   = var.project_id
-  network_name = "${var.deployment_name}-network-${random_id.name.hex}"
-
-  subnets = []
-  depends_on = [
-    module.project-services
-  ]
+resource "google_compute_network" "main" {
+  provider                = google-beta
+  name                    = "${var.deployment_name}-private-network"
+  auto_create_subnetworks = true
+  project                 = var.project_id
 }
 
-module "private-service-access" {
-  source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
-  project_id  = var.project_id
-  vpc_network = module.network-safer-mysql-simple.network_name
-  depends_on = [
-    module.project-services
-  ]
+resource "google_compute_global_address" "main" {
+  name          = "${var.deployment_name}-vpc-address"
+  provider      = google-beta
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.main.name
+  project       = var.project_id
+}
+
+resource "google_service_networking_connection" "main" {
+  network                 = google_compute_network.main.self_link
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.main.name]
 }
 
 resource "google_vpc_access_connector" "main" {
@@ -103,16 +91,15 @@ resource "google_vpc_access_connector" "main" {
   project        = var.project_id
   name           = "${var.deployment_name}-vpc-cx"
   ip_cidr_range  = "10.8.0.0/28"
-  network        = module.network-safer-mysql-simple.network_name
+  network        = google_compute_network.main.name
   region         = var.region
   max_throughput = 300
-  depends_on     = [module.project-services]
 }
 
 # Looked at using the module, but there doesn't seem to be a huge win there.
 # Handle redis instance
 resource "google_redis_instance" "main" {
-  authorized_network      = module.network-safer-mysql-simple.network_name
+  authorized_network      = google_compute_network.main.name
   connect_mode            = "DIRECT_PEERING"
   location_id             = var.zone
   memory_size_gb          = 1
@@ -123,7 +110,6 @@ resource "google_redis_instance" "main" {
   reserved_ip_range       = "10.137.125.88/29"
   tier                    = "BASIC"
   transit_encryption_mode = "DISABLED"
-  depends_on              = [module.project-services]
   labels                  = var.labels
 }
 
@@ -147,7 +133,7 @@ resource "google_sql_database_instance" "main" {
     user_labels           = var.labels
     ip_configuration {
       ipv4_enabled    = false
-      private_network = module.network-safer-mysql-simple.network_self_link
+      private_network = "projects/${var.project_id}/global/networks/${google_compute_network.main.name}"
     }
     location_preference {
       zone = var.zone
@@ -158,9 +144,20 @@ resource "google_sql_database_instance" "main" {
     }
   }
   deletion_protection = false
+
   depends_on = [
-    module.project-services,
-    google_vpc_access_connector.main,
+    google_service_networking_connection.main
+  ]
+}
+
+resource "google_sql_user" "main" {
+  project         = var.project_id
+  name            = "${google_service_account.runsa.account_id}@${var.project_id}.iam"
+  type            = "CLOUD_IAM_SERVICE_ACCOUNT"
+  instance        = google_sql_database_instance.main.name
+  deletion_policy = "ABANDON"
+  depends_on = [
+    time_sleep.delay_sql_user_deletion
   ]
 }
 
@@ -168,55 +165,8 @@ resource "google_sql_database" "database" {
   project  = var.project_id
   name     = "todo"
   instance = google_sql_database_instance.main.name
-  # I know, explicit dependencies.
-  # But if I didn't put that there, destroy doesn work
-  depends_on = [google_service_account.runsa]
-}
-
-
-resource "google_sql_user" "main" {
-  project  = var.project_id
-  name     = "${google_service_account.runsa.account_id}@${var.project_id}.iam"
-  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
-  instance = google_sql_database_instance.main.name
-  # I know, explicit dependencies.
-  # But if I didn't put that there, destroy doesn work
-  depends_on = [google_service_account.runsa]
-
-}
-
-module "secret-manager" {
-  source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "~> 0.1"
-  project_id = var.project_id
-  labels = {
-    redis_host = var.labels,
-    db_host    = var.labels,
-    db_user    = var.labels,
-    db_conn    = var.labels,
-  }
-  secrets = [
-    {
-      name                  = "redis_host"
-      automatic_replication = true
-      secret_data           = google_redis_instance.main.host
-    },
-    {
-      name                  = "db_host"
-      automatic_replication = true
-
-      secret_data = google_sql_database_instance.main.ip_address.0.ip_address
-    },
-    {
-      name                  = "db_user"
-      automatic_replication = true
-      secret_data           = google_service_account.runsa.email
-    },
-    {
-      name                  = "db_conn"
-      automatic_replication = true
-      secret_data           = google_sql_database_instance.main.connection_name
-    },
+  depends_on = [
+    time_sleep.delay_sql_database_deletion
   ]
 }
 
@@ -226,54 +176,31 @@ resource "google_cloud_run_service" "api" {
   location = var.region
   project  = var.project_id
 
-
   template {
     spec {
       service_account_name = google_service_account.runsa.email
       containers {
         image = local.api_image
         env {
-          name = "redis_host"
-          value_from {
-            secret_key_ref {
-              name = "redis_host"
-              key  = "latest"
-            }
-          }
+          name  = "redis_host"
+          value = google_redis_instance.main.host
         }
         env {
-          name = "db_host"
-          value_from {
-            secret_key_ref {
-              name = "db_host"
-              key  = "latest"
-            }
-          }
-        }
-
-        env {
-          name = "db_user"
-          value_from {
-            secret_key_ref {
-              name = "db_user"
-              key  = "latest"
-            }
-          }
+          name  = "db_host"
+          value = google_sql_database_instance.main.ip_address.0.ip_address
         }
         env {
-          name = "db_conn"
-          value_from {
-            secret_key_ref {
-              name = "db_conn"
-              key  = "latest"
-            }
-          }
+          name  = "db_user"
+          value = google_service_account.runsa.email
+        }
+        env {
+          name  = "db_conn"
+          value = google_sql_database_instance.main.connection_name
         }
         env {
           name  = "db_name"
           value = "todo"
         }
-
         env {
           name  = "redis_port"
           value = "6379"
@@ -297,11 +224,9 @@ resource "google_cloud_run_service" "api" {
     labels = var.labels
   }
   autogenerate_revision_name = true
-  # I know, implicit dependencies. But I got flaky tests cause stuff didn't
-  # exist yet. So explicit dependencies is what you get.
   depends_on = [
-    google_project_iam_member.allrun,
-    module.secret-manager,
+    google_sql_user.main,
+    google_sql_database.database
   ]
 }
 
@@ -346,3 +271,12 @@ resource "google_cloud_run_service_iam_member" "noauth_fe" {
   member   = "allUsers"
 }
 
+# These enforce the timing and order of getting destroy to work properly
+# with postgres databases.
+resource "time_sleep" "delay_sql_database_deletion" {
+  destroy_duration = "2m"
+}
+
+resource "time_sleep" "delay_sql_user_deletion" {
+  destroy_duration = "5m"
+}

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 output "endpoint" {
   value       = module.three_tier_app.endpoint
   description = "The url of the front end which we want to surface to the user"
@@ -24,9 +22,4 @@ output "endpoint" {
 output "sqlservername" {
   value       = module.three_tier_app.sqlservername
   description = "The name of the database that we randomly generated."
-}
-
-output "networkName" {
-  value       = module.three_tier_app.networkName
-  description = "The name of the network that we randomly generated."
 }
