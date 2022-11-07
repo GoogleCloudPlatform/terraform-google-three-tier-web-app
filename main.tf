@@ -48,7 +48,7 @@ module "project-services" {
 
 resource "google_service_account" "runsa" {
   project      = var.project_id
-  account_id   = var.deployment_name
+  account_id   = "${var.deployment_name}-run-sa"
   display_name = "Service Account for Cloud Run"
 }
 
@@ -57,10 +57,6 @@ resource "google_project_iam_member" "allrun" {
   project  = data.google_project.project.number
   role     = each.key
   member   = "serviceAccount:${google_service_account.runsa.email}"
-}
-
-resource "random_id" "name" {
-  byte_length = 2
 }
 
 resource "google_compute_network" "main" {
