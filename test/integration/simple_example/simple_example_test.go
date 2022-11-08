@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package multiple_buckets
+package simpleExample
 
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
@@ -24,8 +25,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Retry if these errors are encountered.
+var retryErrors = map[string]string{
+	// Error for Postgres SQL not deleting databases.
+	".*is being accessed by other users.*": "Database will eventually let you delete it",
+}
+
 func TestSimpleExample(t *testing.T) {
-	example := tft.NewTFBlueprintTest(t)
+	example := tft.NewTFBlueprintTest(t, tft.WithRetryableTerraformErrors(retryErrors, 10, time.Minute))
 
 	example.DefineVerify(func(assert *assert.Assertions) {
 		example.DefaultVerify(assert)

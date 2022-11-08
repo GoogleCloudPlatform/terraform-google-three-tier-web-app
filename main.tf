@@ -152,18 +152,12 @@ resource "google_sql_user" "main" {
   type            = "CLOUD_IAM_SERVICE_ACCOUNT"
   instance        = google_sql_database_instance.main.name
   deletion_policy = "ABANDON"
-  depends_on = [
-    time_sleep.delay_sql_user_deletion
-  ]
 }
 
 resource "google_sql_database" "database" {
   project  = var.project_id
   name     = "todo"
   instance = google_sql_database_instance.main.name
-  depends_on = [
-    time_sleep.delay_sql_database_deletion
-  ]
 }
 
 resource "google_cloud_run_service" "api" {
@@ -267,12 +261,3 @@ resource "google_cloud_run_service_iam_member" "noauth_fe" {
   member   = "allUsers"
 }
 
-# These enforce the timing and order of getting destroy to work properly
-# with postgres databases.
-resource "time_sleep" "delay_sql_database_deletion" {
-  destroy_duration = "2m"
-}
-
-resource "time_sleep" "delay_sql_user_deletion" {
-  destroy_duration = "5m"
-}
