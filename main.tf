@@ -19,7 +19,6 @@ data "google_project" "project" {
 }
 
 locals {
-  sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   api_image = "gcr.io/sic-container-repo/todo-api-postgres:latest"
   fe_image  = "gcr.io/sic-container-repo/todo-fe"
 }
@@ -177,7 +176,7 @@ resource "google_cloud_run_service" "api" {
         }
         env {
           name  = "db_host"
-          value = google_sql_database_instance.main.ip_address.0.ip_address
+          value = google_sql_database_instance.main.ip_address[0].ip_address
         }
         env {
           name  = "db_user"
