@@ -35,6 +35,6 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-three-tier-app/v0.1.0"
+    module_name = "blueprints/terraform/terraform-google-three-tier-app/v0.1.1"
   }
 }
