@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package simpleExample
+package simple_example
 
 import (
 	"fmt"
@@ -29,6 +29,7 @@ import (
 var retryErrors = map[string]string{
 	// Error for Postgres SQL not deleting databases.
 	".*is being accessed by other users.*": "Database will eventually let you delete it",
+	".*SERVICE_DISABLED.*":                 "Service enablement is eventually consistent",
 }
 
 func TestSimpleExample(t *testing.T) {
