@@ -1,4 +1,4 @@
-# terraform-google-three-tier-app
+# terraform-google-three-tier-web-app
 
 This module was generated from [terraform-google-module-template](https://github.com/terraform-google-modules/terraform-google-module-template/), which by default generates a module that simply creates a GCS bucket. As the module develops, this README should be updated.
 
