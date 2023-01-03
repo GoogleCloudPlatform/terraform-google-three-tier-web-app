@@ -32,7 +32,7 @@ Functional examples are included in the
 | deployment\_name | The name of this particular deployment, will get added as a prefix to most resources. | `string` | `"three-tier-app"` | no |
 | enable\_apis | Whether or not to enable underlying apis in this solution. . | `string` | `true` | no |
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
-| project\_id | The project ID to deploy to | `any` | n/a | yes |
+| project\_id | The project ID to deploy to | `string` | n/a | yes |
 | region | The Compute Region to deploy to | `string` | n/a | yes |
 | zone | The Compute Zonbe to deploy to | `string` | n/a | yes |
 

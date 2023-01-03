@@ -20,7 +20,17 @@ terraform {
     google = {
       source = "hashicorp/google"
       # TODO: Check why this filter was breaking tests.
-      # version = "~> 3.53, < 5.0"
+      version = ">= 3.53, < 5.0"
+    }
+
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = ">= 3.53, < 5.0"
+    }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "~>3.4"
     }
   }
 
