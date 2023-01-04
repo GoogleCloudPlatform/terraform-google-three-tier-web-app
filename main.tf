@@ -128,9 +128,10 @@ resource "google_sql_database_instance" "main" {
 }
 
 resource "google_sql_database" "database" {
-  project  = var.project_id
-  name     = "todo"
-  instance = google_sql_database_instance.main.name
+  project         = var.project_id
+  name            = "todo"
+  instance        = google_sql_database_instance.main.name
+  deletion_policy = "abandon"
 }
 
 
@@ -330,4 +331,3 @@ resource "google_cloud_run_service_iam_member" "noauth_fe" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
-
