@@ -34,7 +34,7 @@ Functional examples are included in the
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
 | project\_id | The project ID to deploy to | `any` | n/a | yes |
 | region | The Compute Region to deploy to | `string` | n/a | yes |
-| zone | The Compute Zonbe to deploy to | `string` | n/a | yes |
+| zone | The Compute Zone to deploy to | `string` | n/a | yes |
 
 ## Outputs
 
