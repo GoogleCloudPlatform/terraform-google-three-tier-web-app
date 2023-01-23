@@ -156,6 +156,7 @@ resource "google_redis_instance" "main" {
   location_id             = var.zone
   memory_size_gb          = 1
   name                    = "${var.deployment_name}-cache"
+  display_name            = "${var.deployment_name}-cache"
   project                 = var.project_id
   redis_version           = "REDIS_6_X"
   region                  = var.region
