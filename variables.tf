@@ -15,9 +15,9 @@
  */
 
 variable "project_id" {
+  type        = string
   description = "The project ID to deploy to"
 }
-
 
 variable "region" {
   type        = string
@@ -29,13 +29,11 @@ variable "zone" {
   description = "The Compute Zonbe to deploy to"
 }
 
-
 variable "deployment_name" {
   type        = string
   description = "The name of this particular deployment, will get added as a prefix to most resources."
   default     = "three-tier-app"
 }
-
 
 variable "labels" {
   type        = map(string)

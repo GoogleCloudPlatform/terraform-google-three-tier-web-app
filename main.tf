@@ -19,7 +19,6 @@ data "google_project" "project" {
 }
 
 locals {
-  sabuild   = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   api_image = "gcr.io/sic-container-repo/todo-api"
   fe_image  = "gcr.io/sic-container-repo/todo-fe"
 }
@@ -76,6 +75,7 @@ module "network-safer-mysql-simple" {
 
 module "private-service-access" {
   source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
+  version     = "13.0.1"
   project_id  = var.project_id
   vpc_network = module.network-safer-mysql-simple.network_name
   depends_on = [
@@ -188,7 +188,7 @@ module "secret-manager" {
     {
       name                  = "sqlhost"
       automatic_replication = true
-      secret_data           = google_sql_database_instance.main.ip_address.0.ip_address
+      secret_data           = google_sql_database_instance.main.ip_address[0].ip_address
     },
     {
       name                  = "todo_user"

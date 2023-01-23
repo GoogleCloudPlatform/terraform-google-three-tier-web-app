@@ -18,9 +18,12 @@ terraform {
   required_version = ">= 0.13"
   required_providers {
     google = {
-      source = "hashicorp/google"
-      # TODO: Check why this filter was breaking tests.
-      # version = "~> 3.53, < 5.0"
+      source  = "hashicorp/google"
+      version = "~> 4.0"
+    }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 4.0"
     }
   }
 
