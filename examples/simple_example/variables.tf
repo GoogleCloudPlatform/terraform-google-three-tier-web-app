@@ -19,3 +19,9 @@ variable "project_id" {
   type        = string
 }
 
+variable "deployment_name" {
+  type        = string
+  description = "The name of this particular deployment."
+  default     = "three-tier-app"
+}
+
