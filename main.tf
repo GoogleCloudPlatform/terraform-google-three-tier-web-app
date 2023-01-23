@@ -100,6 +100,7 @@ resource "google_redis_instance" "main" {
   location_id             = var.zone
   memory_size_gb          = 1
   name                    = "${var.deployment_name}-cache"
+  display_name            = "${var.deployment_name}-cache"
   project                 = var.project_id
   redis_version           = "REDIS_6_X"
   region                  = var.region
@@ -160,27 +161,6 @@ resource "google_sql_database" "database" {
   name     = "todo"
   instance = google_sql_database_instance.main.name
 }
-
-
-# Looked at using the module, but there doesn't seem to be a huge win there.
-# Handle redis instance
-resource "google_redis_instance" "main" {
-  authorized_network      = module.network-safer-mysql-simple.network_name
-  connect_mode            = "DIRECT_PEERING"
-  location_id             = var.zone
-  memory_size_gb          = 1
-  name                    = "${var.deployment_name}-cache"
-  display_name            = "${var.deployment_name}-cache"
-  project                 = var.project_id
-  redis_version           = "REDIS_6_X"
-  region                  = var.region
-  reserved_ip_range       = "10.137.125.88/29"
-  tier                    = "BASIC"
-  transit_encryption_mode = "DISABLED"
-  depends_on              = [module.project-services]
-  labels                  = var.labels
-}
-
 
 
 module "secret-manager" {
