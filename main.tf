@@ -162,41 +162,6 @@ resource "google_sql_database" "database" {
   instance = google_sql_database_instance.main.name
 }
 
-
-module "secret-manager" {
-  source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "~> 0.1"
-  project_id = var.project_id
-  labels = {
-    redishost = var.labels,
-    sqlhost   = var.labels,
-    todo_user = var.labels,
-    todo_pass = var.labels
-  }
-  secrets = [
-    {
-      name                  = "redishost"
-      automatic_replication = true
-      secret_data           = google_redis_instance.main.host
-    },
-    {
-      name                  = "sqlhost"
-      automatic_replication = true
-      secret_data           = google_sql_database_instance.main.ip_address[0].ip_address
-    },
-    {
-      name                  = "todo_user"
-      automatic_replication = true
-      secret_data           = "todo_user"
-    },
-    {
-      name                  = "todo_pass"
-      automatic_replication = true
-      secret_data           = google_sql_user.main.password
-    },
-  ]
-}
-
 resource "google_cloud_run_service" "api" {
   name     = "${var.deployment_name}-api"
   provider = google-beta
