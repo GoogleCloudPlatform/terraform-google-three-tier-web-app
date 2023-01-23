@@ -46,3 +46,12 @@ variable "enable_apis" {
   description = "Whether or not to enable underlying apis in this solution. ."
   default     = true
 }
+
+variable "run_roles_list" {
+  description = "The list of roles that run needs"
+  type        = list(string)
+  default = [
+    "roles/cloudsql.instanceUser",
+    "roles/cloudsql.client",
+  ]
+}

@@ -34,6 +34,7 @@ Functional examples are included in the
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
 | project\_id | The project ID to deploy to | `string` | n/a | yes |
 | region | The Compute Region to deploy to | `string` | n/a | yes |
+| run\_roles\_list | The list of roles that run needs | `list(string)` | <pre>[<br>  "roles/cloudsql.instanceUser",<br>  "roles/cloudsql.client"<br>]</pre> | no |
 | zone | The Compute Zonbe to deploy to | `string` | n/a | yes |
 
 ## Outputs
