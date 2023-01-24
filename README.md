@@ -4,7 +4,15 @@ This module was generated from [terraform-google-module-template](https://github
 
 The resources/services/activations/deletions that this module will create/trigger are:
 
-- Create a GCS bucket with the provided name
+- Cloud Run Services
+  - Frontend Application (HTML/JS/CSS)
+  - Middleware Application (Golang)
+- Cloud Memorystore Instance
+  - Redis
+- Cloud SQL Instance
+  - Postgres
+- Serverless VPC Access
+
 
 ## Usage
 
