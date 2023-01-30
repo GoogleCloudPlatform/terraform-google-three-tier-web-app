@@ -1,10 +1,21 @@
-# terraform-google-three-tier-web-app
+# Three-tier web app
 
-This module was generated from [terraform-google-module-template](https://github.com/terraform-google-modules/terraform-google-module-template/), which by default generates a module that simply creates a GCS bucket. As the module develops, this README should be updated.
+### Tagline
+Create a web app using a three-tiered architecture
 
-The resources/services/activations/deletions that this module will create/trigger are:
+### Detailed
+This solution quickly and securely creates a web app using a three-tiered architecture with a front end, middleware, and back end (PostgreSQL database).
+You can choose whether to deploy your solution through the console directly or download as Terraform on GitHub to deploy later.
 
-- Create a GCS bucket with the provided name
+### Architecture
+1- User requests are sent to the front end, which is deployed on two Cloud Run services as containers to support high scalability applications.
+2- The request then lands on the middle tier, which is the API layer that provides access to the backend. This is also deployed on Cloud Run for scalability and ease of deployment in multiple languages. This middleware is a Golang based API.
+3- The frequent requests are cached in Memorystore for Redis for serving the request fast in-memory. The response is then served back to the user.
+4- For new requests from the users, Cloud SQL provides the backend as the database layer. The response is then served back to the user.
+5- For DevOps, Cloud Build packages up the containers and deploys them to be available as Cloud Run services.
+
+## Documentation
+- [Architecture Diagram](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/blob/main/three_tier_web_app_v2.svg)
 
 ## Usage
 
