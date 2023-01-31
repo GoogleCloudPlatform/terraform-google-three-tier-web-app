@@ -8,6 +8,15 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.3](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.2...v0.1.3) (2023-01-31)
+
+
+### Bug Fixes
+
+* Add deletion policy database ([#18](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/18)) ([cef9585](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/cef9585b11aa9bc546f49147d20df49086bab44b))
+* corrected minor typo in variables.tf ([#19](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/19)) ([3a75057](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/3a75057ec73cebd8d33582d435328a4ba8ac52b3))
+* fixing error where redis server ends up unnamed in Asset Inventory ([#21](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/21)) ([e8cb2ca](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/e8cb2ca57166bea92a06cc813648f0d49bc10751))
+
 ## [0.1.2](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.1...v0.1.2) (2023-01-30)
 
 
