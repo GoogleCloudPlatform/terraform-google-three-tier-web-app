@@ -157,9 +157,10 @@ resource "google_sql_user" "main" {
 }
 
 resource "google_sql_database" "database" {
-  project  = var.project_id
-  name     = "todo"
-  instance = google_sql_database_instance.main.name
+  project         = var.project_id
+  name            = "todo"
+  instance        = google_sql_database_instance.main.name
+  deletion_policy = "abandon"
 }
 
 resource "google_cloud_run_service" "api" {
