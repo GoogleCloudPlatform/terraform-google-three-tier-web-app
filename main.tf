@@ -79,6 +79,7 @@ resource "google_service_networking_connection" "main" {
   network                 = google_compute_network.main.self_link
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.main.name]
+
 }
 
 resource "google_vpc_access_connector" "main" {
@@ -99,6 +100,7 @@ resource "google_redis_instance" "main" {
   location_id             = var.zone
   memory_size_gb          = 1
   name                    = "${var.deployment_name}-cache"
+  display_name            = "${var.deployment_name}-cache"
   project                 = var.project_id
   redis_version           = "REDIS_6_X"
   region                  = var.region
@@ -144,6 +146,7 @@ resource "google_sql_database_instance" "main" {
     google_service_networking_connection.main
   ]
 }
+
 
 resource "google_sql_user" "main" {
   project         = var.project_id
@@ -259,4 +262,3 @@ resource "google_cloud_run_service_iam_member" "noauth_fe" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
-

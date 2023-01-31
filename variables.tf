@@ -19,7 +19,6 @@ variable "project_id" {
   description = "The project ID to deploy to"
 }
 
-
 variable "region" {
   type        = string
   description = "The Compute Region to deploy to"
@@ -29,7 +28,6 @@ variable "zone" {
   type        = string
   description = "The Compute Zonbe to deploy to"
 }
-
 
 variable "deployment_name" {
   type        = string
