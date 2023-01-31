@@ -40,7 +40,7 @@ spec:
       5- For DevOps, Cloud Build packages up the containers and deploys them to be available as Cloud Run services.
   documentation:
   - title: Architecture Diagram
-    url: https://github.com/terraform-google-modules/terraform-google-three-tier-web-app/blob/assets/three_tier_web_app_v2.svg
+    url: https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/blob/main/assets/three_tier_web_app_v2.svg
   examples:
   - name: simple_example
     location: examples/simple_example
