@@ -26,7 +26,7 @@ variable "region" {
 
 variable "zone" {
   type        = string
-  description = "The Compute Zonbe to deploy to"
+  description = "The Compute Zone to deploy to"
 }
 
 variable "deployment_name" {
