@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 output "endpoint" {
   value       = module.three_tier_app.endpoint
   description = "The url of the front end which we want to surface to the user"

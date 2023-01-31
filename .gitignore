@@ -48,3 +48,4 @@ credentials.json
 .terraform.lock.hcl
 clean
 temp.vars
+cft.json

@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.2](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.1...v0.1.2) (2023-01-30)
+
+
+### Bug Fixes
+
+* updating solution to work with Service Accounts ([#13](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/13)) ([ebd64c4](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/ebd64c4d1a694836b412b7482ae4ebf70b4d13f8))
+
 ## [0.1.1](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-app/compare/v0.1.0...v0.1.1) (2022-10-28)
 
 
