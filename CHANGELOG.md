@@ -8,6 +8,14 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.4](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.3...v0.1.4) (2023-02-07)
+
+
+### Bug Fixes
+
+* switching case on abandon keyword ([8efa83f](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/8efa83f2aeb50c5bd80b5c1bc9ef896078f6044f))
+* updated architecture diagram ([#27](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/27)) ([245e4be](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/245e4be8a284e2db8f9954473dc943c340d741c4))
+
 ## [0.1.3](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.2...v0.1.3) (2023-01-31)
 
 
