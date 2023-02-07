@@ -15,7 +15,7 @@ You can choose whether to deploy your solution through the console directly or d
 1. For DevOps, Cloud Build packages up the containers and deploys them to be available as Cloud Run services.
 
 ## Documentation
-- [Architecture Diagram](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/blob/main/assets/three_tier_web_app_v2.svg)
+- [Architecture Diagram](assets/three_tier_web_app_v4.svg)
 
 ## Usage
 
