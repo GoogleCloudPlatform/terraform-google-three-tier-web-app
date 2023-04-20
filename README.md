@@ -45,6 +45,7 @@ Functional examples are included in the
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
 | project\_id | The project ID to deploy to | `string` | n/a | yes |
 | region | The Compute Region to deploy to | `string` | n/a | yes |
+| run\_roles\_list | The list of roles that run needs | `list(string)` | <pre>[<br>  "roles/cloudsql.instanceUser",<br>  "roles/cloudsql.client"<br>]</pre> | no |
 | zone | The Compute Zone to deploy to | `string` | n/a | yes |
 
 ## Outputs
@@ -52,6 +53,7 @@ Functional examples are included in the
 | Name | Description |
 |------|-------------|
 | endpoint | The url of the front end which we want to surface to the user |
+| neos\_toc\_url | The URL to launch the in-console tutorial for the Three Tier App solution |
 | sqlservername | The name of the database that we randomly generated. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
