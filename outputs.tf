@@ -22,3 +22,8 @@ output "sqlservername" {
   value       = google_sql_database_instance.main.name
   description = "The name of the database that we randomly generated."
 }
+
+output "neos_toc_url" {
+  value       = "https://console.cloud.google.com/products/solutions/deployments?walkthrough_id=panels--sic--three-tier-web-app&project=${var.project_id}"
+  description = "The URL to launch the in-console tutorial for the Three Tier App solution"
+}
