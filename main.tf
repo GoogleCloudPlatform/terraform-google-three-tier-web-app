@@ -242,6 +242,11 @@ resource "google_cloud_run_service" "fe" {
         }
       }
     }
+     metadata {
+      annotations = {
+        "autoscaling.knative.dev/maxScale"        = "10"
+      }
+    }
   }
   metadata {
     labels = var.labels
