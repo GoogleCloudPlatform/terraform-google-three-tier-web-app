@@ -204,7 +204,7 @@ resource "google_cloud_run_service" "api" {
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/maxScale"        = "10"
+        "autoscaling.knative.dev/maxScale"        = "8"
         "run.googleapis.com/cloudsql-instances"   = google_sql_database_instance.main.connection_name
         "run.googleapis.com/client-name"          = "terraform"
         "run.googleapis.com/vpc-access-egress"    = "all"
@@ -244,7 +244,7 @@ resource "google_cloud_run_service" "fe" {
     }
     metadata {
       annotations = {
-        "autoscaling.knative.dev/maxScale" = "10"
+        "autoscaling.knative.dev/maxScale" = "8"
       }
     }
   }
