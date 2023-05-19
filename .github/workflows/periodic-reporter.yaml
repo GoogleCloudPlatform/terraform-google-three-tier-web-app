@@ -39,6 +39,7 @@ jobs:
                     owner: 'GoogleCloudPlatform',
                     repo: 'terraform-google-secure-cicd',
                     state: 'open',
+                    creator: 'github-actions[bot]',
                     labels: [periodicLabel]
                   });
                   // createOrCommentIssue creates a new issue or comments on an existing issue.
@@ -53,7 +54,14 @@ jobs:
                       });
                       return;
                     }
-                    console.log(`found previous issue ${prevIssues[0].html_url}, adding comment`);
+                    if (prevIssues.length > 1) {
+                      console.warn(
+                        `found ${prevIssues.length} issues but only adding comment to ${prevIssues[0].html_url}`
+                      );
+                    }
+                    console.log(
+                      `found previous issue ${prevIssues[0].html_url}, adding comment`
+                    );
                     await github.rest.issues.createComment({
                       ...context.repo,
                       issue_number: prevIssues[0].number,
@@ -61,8 +69,8 @@ jobs:
                     });
                   };
 
-                  // updateAndCloseIssue comments on an existing issue and closes it. No-op if no issue exists.
-                  const updateAndCloseIssue = async function (txt) {
+                  // updateAndCloseIssues comments on any existing issues and closes them. No-op if no issue exists.
+                  const updateAndCloseIssues = async function (txt) {
                     if (prevIssues.length < 1) {
                       console.log('no previous issues found, skipping close');
                       return;
@@ -79,7 +87,7 @@ jobs:
                         ...context.repo,
                         issue_number: prevIssue.number,
                         body: txt,
-                        state: "closed",
+                        state: 'closed'
                       });
                     }
                   };
@@ -118,7 +126,7 @@ jobs:
                         periodicCheck.status === 'completed' &&
                         periodicCheck.conclusion === 'success'
                       ) {
-                        updateAndCloseIssue(
+                        updateAndCloseIssues(
                           `[Passing periodic](${periodicCheck.html_url}) at ${commit.html_url}. Closing this issue.`
                         );
                       } else if (periodicCheck.status === 'in_progress') {
