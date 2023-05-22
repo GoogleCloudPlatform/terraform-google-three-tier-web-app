@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.6](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.5...v0.1.6) (2023-05-18)
+
+
+### Bug Fixes
+
+* lower maxScale to increase audience who can use ([#43](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/43)) ([8edb16c](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/8edb16c3ab8f391c31afaea65ea8cffddbe9e7f0))
+
 ## [0.1.5](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.4...v0.1.5) (2023-02-08)
 
 
