@@ -19,77 +19,79 @@ metadata:
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
-  title: Three-tier web app
-  source:
-    repo: https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app.git
-    sourceType: git
-  version: 0.1.1
-  actuationTool:
-    type: Terraform
-    version: '>= 0.13'
-  description:
-    tagline: Create a web app using a three-tiered architecture
-    detailed: |-
-      This solution quickly and securely creates a web app using a three-tiered architecture with a front end, middleware, and back end (PostgreSQL database).
-      You can choose whether to deploy your solution through the console directly or download as Terraform on GitHub to deploy later.
-    architecture:
-    - User requests are sent to the front end, which is deployed on two Cloud Run services as containers to support high scalability applications.
-    - The request then lands on the middle tier, which is the API layer that provides access to the backend. This is also deployed on Cloud Run for scalability and ease of deployment in multiple languages. This middleware is a Golang based API.
-    - The frequent requests are cached in Memorystore for Redis for serving the request fast in-memory. The response is then served back to the user.
-    - For new requests from the users, Cloud SQL provides the backend as the database layer. The response is then served back to the user.
-    - For DevOps, Cloud Build packages up the containers and deploys them to be available as Cloud Run services.
-  documentation:
-  - title: Architecture Diagram
-    url: https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/blob/main/assets/three_tier_web_app_v2.svg
-  examples:
-  - name: simple_example
-    location: examples/simple_example
-  variables:
-  - name: deployment_name
-    description: The name of this particular deployment, will get added as a prefix to most resources.
-    type: string
-    default: three-tier-app
-    required: false
-  - name: enable_apis
-    description: Whether or not to enable underlying apis in this solution. .
-    type: string
-    default: true
-    required: false
-  - name: labels
-    description: A map of labels to apply to contained resources.
-    type: map(string)
-    default:
-      three-tier-app: true
-    required: false
-  - name: project_id
-    description: The project ID to deploy to
-    type: string
-    required: true
-  - name: region
-    description: The Compute Region to deploy to
-    type: string
-    required: true
-  - name: run_roles_list
-    description: The list of roles that run needs
-    type: list(string)
-    default:
-    - roles/cloudsql.instanceUser
-    - roles/cloudsql.client
-    required: false
-  - name: zone
-    description: The Compute Zonbe to deploy to
-    type: string
-    required: true
-  outputs:
-  - name: endpoint
-    description: The url of the front end which we want to surface to the user
-  - name: sqlservername
-    description: The name of the database that we randomly generated.
-  roles:
-  - level: Project
+  info:
+    title: Three-tier web app
+    source:
+      repo: https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app.git
+      sourceType: git
+    version: 0.1.5
+    actuationTool:
+      flavor: Terraform
+      version: '>= 0.13'
+    description:
+      tagline: Create a web app using a three-tiered architecture
+      detailed: |-
+        This solution quickly and securely creates a web app using a three-tiered architecture with a front end, middleware, and back end (PostgreSQL database).
+        You can choose whether to deploy your solution through the console directly or download as Terraform on GitHub to deploy later.
+      architecture:
+      - User requests are sent to the front end, which is deployed on two Cloud Run services as containers to support high scalability applications.
+      - The request then lands on the middle tier, which is the API layer that provides access to the backend. This is also deployed on Cloud Run for scalability and ease of deployment in multiple languages. This middleware is a Golang based API.
+      - The frequent requests are cached in Memorystore for Redis for serving the request fast in-memory. The response is then served back to the user.
+      - For new requests from the users, Cloud SQL provides the backend as the database layer. The response is then served back to the user.
+      - For DevOps, Cloud Build packages up the containers and deploys them to be available as Cloud Run services.
+  content:
+    documentation:
+    - title: Architecture Diagram
+      url: assets/three_tier_web_app_v4.svg
+    examples:
+    - name: simple_example
+      location: examples/simple_example
+  interfaces:
+    variables:
+    - name: deployment_name
+      description: The name of this particular deployment, will get added as a prefix to most resources.
+      varType: string
+      defaultValue: three-tier-app
+    - name: enable_apis
+      description: Whether or not to enable underlying apis in this solution. .
+      varType: string
+      defaultValue: true
+    - name: labels
+      description: A map of labels to apply to contained resources.
+      varType: map(string)
+      defaultValue:
+        three-tier-app: true
+    - name: project_id
+      description: The project ID to deploy to
+      varType: string
+      required: true
+    - name: region
+      description: The Compute Region to deploy to
+      varType: string
+      required: true
+    - name: run_roles_list
+      description: The list of roles that run needs
+      varType: list(string)
+      defaultValue:
+      - roles/cloudsql.instanceUser
+      - roles/cloudsql.client
+    - name: zone
+      description: The Compute Zone to deploy to
+      varType: string
+      required: true
+    outputs:
+    - name: endpoint
+      description: The url of the front end which we want to surface to the user
+    - name: neos_toc_url
+      description: The URL to launch the in-console tutorial for the Three Tier App solution
+    - name: sqlservername
+      description: The name of the database that we randomly generated.
+  requirements:
     roles:
-    - roles/owner
-  services:
-  - cloudresourcemanager.googleapis.com
-  - serviceusage.googleapis.com
-  - servicenetworking.googleapis.com
+    - level: Project
+      roles:
+      - roles/owner
+    services:
+    - cloudresourcemanager.googleapis.com
+    - serviceusage.googleapis.com
+    - servicenetworking.googleapis.com
