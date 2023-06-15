@@ -207,9 +207,11 @@ resource "google_cloud_run_service" "api" {
         "autoscaling.knative.dev/maxScale"        = "8"
         "run.googleapis.com/cloudsql-instances"   = google_sql_database_instance.main.connection_name
         "run.googleapis.com/client-name"          = "terraform"
-        "run.googleapis.com/startupProbeType"     = "Default"
         "run.googleapis.com/vpc-access-egress"    = "all"
         "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.main.id
+      }
+      labels = {
+        "run.googleapis.com/startupProbeType" = "Default"
       }
     }
   }
@@ -245,6 +247,9 @@ resource "google_cloud_run_service" "fe" {
     metadata {
       annotations = {
         "autoscaling.knative.dev/maxScale" = "8"
+      }
+      labels = {
+        "run.googleapis.com/startupProbeType" = "Default"
       }
     }
   }
