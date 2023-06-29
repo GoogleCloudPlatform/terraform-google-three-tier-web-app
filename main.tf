@@ -209,7 +209,9 @@ resource "google_cloud_run_service" "api" {
         "run.googleapis.com/client-name"          = "terraform"
         "run.googleapis.com/vpc-access-egress"    = "all"
         "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.main.id
-
+      }
+      labels = {
+        "run.googleapis.com/startupProbeType" = "Default"
       }
     }
   }
@@ -245,6 +247,9 @@ resource "google_cloud_run_service" "fe" {
     metadata {
       annotations = {
         "autoscaling.knative.dev/maxScale" = "8"
+      }
+      labels = {
+        "run.googleapis.com/startupProbeType" = "Default"
       }
     }
   }
