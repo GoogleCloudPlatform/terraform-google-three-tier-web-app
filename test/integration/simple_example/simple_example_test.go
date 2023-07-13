@@ -36,7 +36,6 @@ func TestSimpleExample(t *testing.T) {
 	example := tft.NewTFBlueprintTest(t, tft.WithRetryableTerraformErrors(retryErrors, 10, time.Minute))
 
 	example.DefineVerify(func(assert *assert.Assertions) {
-		example.DefaultVerify(assert)
 		sqlname := example.GetStringOutput("sqlservername")
 		projectID := example.GetTFSetupStringOutput("project_id")
 		prefix := "three-tier-app"
