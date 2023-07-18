@@ -8,6 +8,14 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.7](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.6...v0.1.7) (2023-07-18)
+
+
+### Bug Fixes
+
+* **deps:** update cft/developer-tools docker tag to v1.13 ([#54](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/54)) ([4e02158](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/4e021588771f84f040703b5f3cdcaf2541943064))
+* Update int.cloudbuild.yaml to use LR billing ([#55](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/55)) ([a63488b](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/a63488b846d8b3735fd75a0b928ec1dd405a6b63))
+
 ## [0.1.6](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.5...v0.1.6) (2023-05-18)
 
 
