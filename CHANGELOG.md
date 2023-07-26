@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.8](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.7...v0.1.8) (2023-07-26)
+
+
+### Bug Fixes
+
+* pinning google provider &lt; 4.75.0 ([#62](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/62)) ([bc73a1a](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/bc73a1a6d1e2d2061ebf9cd2b38a3d36df92ab83))
+
 ## [0.1.7](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.6...v0.1.7) (2023-07-18)
 
 
