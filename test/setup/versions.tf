@@ -23,8 +23,7 @@ terraform {
     }
     google-beta = {
       source = "hashicorp/google-beta"
-      # TODO: Check why this filter was breaking tests.
-      # version = "~> 3.25.0"
+      version = "<= 4.74, != 4.75.0"
     }
   }
 }
