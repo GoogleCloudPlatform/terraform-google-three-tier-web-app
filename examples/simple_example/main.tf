@@ -15,7 +15,8 @@
  */
 
 module "three_tier_app" {
-  source = "../.."
+  source  = "GoogleCloudPlatform/three-tier-web-app/google"
+  version = "~> 0.1"
 
   project_id      = var.project_id
   deployment_name = var.deployment_name
