@@ -24,7 +24,7 @@ spec:
     source:
       repo: https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app.git
       sourceType: git
-    version: 0.1.5
+    version: 0.1.9
     actuationTool:
       flavor: Terraform
       version: '>= 0.13'
