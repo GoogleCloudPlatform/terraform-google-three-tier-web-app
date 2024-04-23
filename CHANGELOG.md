@@ -8,6 +8,17 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.9](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.8...v0.1.9) (2024-04-23)
+
+
+### Bug Fixes
+
+* Add DefaultVerify() test ([#111](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/111)) ([e90b351](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/e90b3517cbfb5452abba89ce62771b5c90d690d6))
+* **deps:** update cft/developer-tools docker tag to v1.14 ([#64](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/64)) ([448b2a4](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/448b2a4c746928552613f9e7fdf5b0833e150248))
+* **deps:** Update cft/developer-tools Docker tag to v1.16 ([#75](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/75)) ([a81a9db](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/a81a9db7b27b19c009481f8c13b0be4403da6b74))
+* **deps:** Update cft/developer-tools Docker tag to v1.17 ([#82](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/82)) ([4faf43c](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/4faf43c48e91980d7feaa6b3d2b1f159987a51fe))
+* **deps:** Update GO and Dev-Tools ([#97](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/97)) ([b50a085](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/b50a085521ea162ac5f0b484816038a749303b0d))
+
 ## [0.1.8](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.7...v0.1.8) (2023-07-26)
 
 
