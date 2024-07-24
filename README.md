@@ -44,9 +44,9 @@ Functional examples are included in the
 | enable\_apis | Whether or not to enable underlying apis in this solution. . | `string` | `true` | no |
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
 | project\_id | The project ID to deploy to | `string` | n/a | yes |
-| region | The Compute Region to deploy to | `string` | n/a | yes |
+| region | The Compute Region to deploy to | `string` | `"us-central1"` | no |
 | run\_roles\_list | The list of roles that run needs | `list(string)` | <pre>[<br>  "roles/cloudsql.instanceUser",<br>  "roles/cloudsql.client"<br>]</pre> | no |
-| zone | The Compute Zone to deploy to | `string` | n/a | yes |
+| zone | The Compute Zone to deploy to | `string` | `"us-central1-a"` | no |
 
 ## Outputs
 
