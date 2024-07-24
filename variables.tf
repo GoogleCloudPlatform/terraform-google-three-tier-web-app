@@ -22,14 +22,14 @@ variable "project_id" {
 variable "region" {
   type        = string
   description = "The Compute Region to deploy to"
-  default = ["us-west-1a"]
+  default     = "us-central1"
 
 }
 
 variable "zone" {
   type        = string
   description = "The Compute Zone to deploy to"
-  default = ["us-west-1a"]
+  default     = "us-central1-a"
 }
 
 variable "deployment_name" {
