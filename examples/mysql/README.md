@@ -1,6 +1,7 @@
-# Simple Example
+# MySQL Example
 
-This example illustrates how to use the `three-tier-app` module.
+This example illustrates how to use the `three-tier-app` module using Cloud SQL
+MySQL.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
