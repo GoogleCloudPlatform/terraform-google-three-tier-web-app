@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,10 +44,16 @@ spec:
       - title: Architecture Diagram
         url: assets/three_tier_web_app_v4.svg
     examples:
+      - name: mysql
+        location: examples/mysql
       - name: simple_example
         location: examples/simple_example
   interfaces:
     variables:
+      - name: database_type
+        description: Cloud SQL Database flavor, mysql or postgresql
+        varType: string
+        defaultValue: postgresql
       - name: deployment_name
         description: The name of this particular deployment, will get added as a prefix to most resources.
         varType: string

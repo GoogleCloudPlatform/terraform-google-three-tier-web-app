@@ -21,6 +21,24 @@ data "google_project" "project" {
 locals {
   api_image = (var.database_type == "mysql" ? "gcr.io/sic-container-repo/todo-api" : "gcr.io/sic-container-repo/todo-api-postgres:latest")
   fe_image  = "gcr.io/sic-container-repo/todo-fe"
+
+  api_env_vars_postgresql = {
+    redis_host = google_redis_instance.main.host
+    db_host    = google_sql_database_instance.main.ip_address[0].ip_address
+    db_user    = google_service_account.runsa.email
+    db_conn    = google_sql_database_instance.main.connection_name
+    db_name    = "todo"
+    redis_port = "6379"
+  }
+
+  api_env_vars_mysql = {
+    REDISHOST  = google_redis_instance.main.host
+    todo_host  = google_sql_database_instance.main.ip_address[0].ip_address
+    todo_user  = "foo"
+    todo_pass  = "bar"
+    todo_name  = "todo"
+    REDISPORT  = "6379"
+  }
 }
 
 module "project-services" {
@@ -136,7 +154,7 @@ resource "google_sql_database_instance" "main" {
       zone = var.zone
     }
     dynamic "database_flags" {
-        for_each = var.database_type == "postgres" ? [1] : []
+        for_each = var.database_type == "postgresql" ? [1] : []
         content {
           name  = "cloudsql.iam_authentication"
           value = "on"
@@ -155,8 +173,8 @@ resource "google_sql_user" "main" {
   project         = var.project_id
   instance        = google_sql_database_instance.main.name
   deletion_policy = "ABANDON"
-  name            = var.database_type == "postgres" ? "${google_service_account.runsa.account_id}@${var.project_id}.iam" : "foo"
-  type            = var.database_type == "postgres" ? "CLOUD_IAM_SERVICE_ACCOUNT" : null
+  name            = var.database_type == "postgresql" ? "${google_service_account.runsa.account_id}@${var.project_id}.iam" : "foo"
+  type            = var.database_type == "postgresql" ? "CLOUD_IAM_SERVICE_ACCOUNT" : null
   password        = var.database_type == "mysql" ? "bar" : null
 }
 
@@ -178,61 +196,12 @@ resource "google_cloud_run_service" "api" {
       service_account_name = google_service_account.runsa.email
       containers {
         image = local.api_image
-        dynamic "env" {
-            for_each = var.database_type == "postgres" ? ["redis_host"] : ["REDISHOST"]
-            content {
-              name  = env.value
-              value = google_redis_instance.main.host
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "postgres" ? ["redis_port"] : ["REDISPORT"]
-            content {
-              name  = env.value
-              value = "6379"
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "postgres" ? ["db_host"] : ["todo_host"]
-            content {
-              name  = env.value
-              value = google_sql_database_instance.main.ip_address[0].ip_address
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "postgres" ? ["db_name"] : ["todo_name"]
-            content {
-              name  = env.value
-              value = "todo"
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "postgres" ? [1] : []
-            content {
-              name  = "db_user"
-              value = google_service_account.runsa.email
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "postgres" ? [1] : []
-            content {
-              name  = "db_conn"
-              value = google_sql_database_instance.main.connection_name
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "mysql" ? [1] : []
-            content {
-              name  = "todo_user"
-              value = "foo"
-            }
-        }
-        dynamic "env" {
-            for_each = var.database_type == "mysql" ? [1] : []
-            content {
-              name  = "todo_pass"
-              value = "bar"
-            }
+	dynamic "env" {
+          for_each = var.database_type == "postgresql" ? local.api_env_vars_postgresql : local.api_env_vars_mysql
+          content {
+            name  = env.key
+            value = env.value
+          }
         }
       }
     }
