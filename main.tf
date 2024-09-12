@@ -32,12 +32,12 @@ locals {
   }
 
   api_env_vars_mysql = {
-    REDISHOST  = google_redis_instance.main.host
-    todo_host  = google_sql_database_instance.main.ip_address[0].ip_address
-    todo_user  = "foo"
-    todo_pass  = "bar"
-    todo_name  = "todo"
-    REDISPORT  = "6379"
+    REDISHOST = google_redis_instance.main.host
+    todo_host = google_sql_database_instance.main.ip_address[0].ip_address
+    todo_user = "foo"
+    todo_pass = "bar"
+    todo_name = "todo"
+    REDISPORT = "6379"
   }
 }
 
@@ -154,11 +154,11 @@ resource "google_sql_database_instance" "main" {
       zone = var.zone
     }
     dynamic "database_flags" {
-        for_each = var.database_type == "postgresql" ? [1] : []
-        content {
-          name  = "cloudsql.iam_authentication"
-          value = "on"
-        }
+      for_each = var.database_type == "postgresql" ? [1] : []
+      content {
+        name  = "cloudsql.iam_authentication"
+        value = "on"
+      }
     }
   }
   deletion_protection = false
@@ -196,7 +196,7 @@ resource "google_cloud_run_service" "api" {
       service_account_name = google_service_account.runsa.email
       containers {
         image = local.api_image
-	dynamic "env" {
+        dynamic "env" {
           for_each = var.database_type == "postgresql" ? local.api_env_vars_postgresql : local.api_env_vars_mysql
           content {
             name  = env.key
