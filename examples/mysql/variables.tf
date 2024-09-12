@@ -24,13 +24,3 @@ variable "deployment_name" {
   description = "The name of this particular deployment."
   default     = "three-tier-app"
 }
-
-variable "database_type" {
-  type        = string
-  description = "Cloud SQL Database flavor, mysql or postgresql"
-  default     = "postgresql"
-  validation {
-    condition     = contains(["mysql", "postgresql"], var.database_type)
-    error_message = "Must be either \"mysql\" or \"postgresql\"."
-  }
-}
