@@ -7,7 +7,6 @@ This example illustrates how to use the `three-tier-app` module using Cloud SQL 
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| database\_type | Cloud SQL Database flavor, mysql or postgresql | `string` | `"postgresql"` | no |
 | deployment\_name | The name of this particular deployment. | `string` | `"three-tier-app"` | no |
 | project\_id | The ID of the project in which to provision resources. | `string` | n/a | yes |
 
