@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 timeout: 5400s
+
 steps:
 - id: swap-module-refs
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['module-swapper']
+
 - id: prepare
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && prepare_environment']
@@ -23,21 +26,64 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_LR_BILLING_ACCOUNT'
+
+# Initialize all tests
+- id: init-all
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
+
+# Test the "simple example" deployment (which uses PostgreSQL)
 - id: simple-example-init
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage init --verbose']
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['init-all']
+  script: |
+    #!/bin/bash -e
+    cft test run TestSimpleExample --stage init --verbose
 - id: simple-example-apply
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage apply --verbose']
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['simple-example-init']
+  script: |
+    #!/bin/bash -e
+    cft test run TestSimpleExample --stage apply --verbose
 - id: simple-example-verify
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage verify --verbose']
-- id: simple-example-teardown
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage teardown --verbose']
-- id: multiple-deploy
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestMultipleDeploy --verbose']
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['simple-example-apply']
+  script: |
+    #!/bin/bash -e
+    cft test run TestSimpleExample --stage verify --verbose
+- id: simple-example-destroy
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['simple-example-verify']
+  script: |
+    #!/bin/bash -e
+    cft test run TestSimpleExample --stage destroy --verbose
+
+# Test a deployment with MySQL
+- id: mysql-init
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['init-all']
+  script: |
+    #!/bin/bash -e
+    cft test run TestMysql --stage init --verbose
+- id: mysql-apply
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['mysql-init']
+  script: |
+    #!/bin/bash -e
+    cft test run TestMysql --stage apply --verbose
+- id: mysql-verify
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['mysql-apply']
+  script: |
+    #!/bin/bash -e
+    cft test run TestMysql --stage verify --verbose
+- id: mysql-destroy
+  name: gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS
+  waitFor: ['mysql-verify']
+  script: |
+    #!/bin/bash -e
+    cft test run TestMysql --stage destroy --verbose
+
 tags:
 - 'ci'
 - 'integration'
