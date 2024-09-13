@@ -37,5 +37,5 @@ func TestMysql(t *testing.T) {
 		// DefaultVerify asserts no resource changes exist after apply.
 		// It helps ensure that a second "terraform apply" wouldn't result in resource deletions/replacements.
 		example.DefaultVerify(assert)
-	}
+	})
 }
