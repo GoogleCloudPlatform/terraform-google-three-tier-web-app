@@ -1,5 +1,8 @@
 # Three-tier web app
 
+This repository contains the Terraform deployed by the Jump Start Solution (JSS) titled [Three-tier web application](https://console.cloud.google.com/products/solutions/details/three-tier-web-app).
+The source code for web application (frontend and middle tier) deployed by this JSS can be found at [github.com/GoogleCloudPlatform/deploystack-three-tier-app](https://github.com/GoogleCloudPlatform/deploystack-three-tier-app).
+
 ### Tagline
 Create a web app using a three-tiered architecture
 
