@@ -30,11 +30,13 @@ var retryErrors = map[string]string{
 }
 
 func TestMysql(t *testing.T) {
-	example := tft.NewTFBlueprintTest(t, tft.WithRetryableTerraformErrors(retryErrors, 10, time.Minute))
+	blueprintTest := tft.NewTFBlueprintTest(t, tft.WithRetryableTerraformErrors(retryErrors, 10, time.Minute))
 
-	example.DefineVerify(func(assert *assert.Assertions) {
+	blueprintTest.DefineVerify(func(assert *assert.Assertions) {
 		// DefaultVerify asserts no resource changes exist after apply.
 		// It helps ensure that a second "terraform apply" wouldn't result in resource deletions/replacements.
-		example.DefaultVerify(assert)
+		blueprintTest.DefaultVerify(assert)
 	})
+
+	blueprintTest.Test()
 }
