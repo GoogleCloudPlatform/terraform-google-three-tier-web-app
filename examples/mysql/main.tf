@@ -20,7 +20,7 @@ module "three_tier_app" {
 
   project_id      = var.project_id
   database_type   = "mysql"
-  deployment_name = "three-tier-app-mysql"
+  deployment_name = "three-tier-mysql"
   region          = "us-central1"
   zone            = "us-central1-a"
 }
