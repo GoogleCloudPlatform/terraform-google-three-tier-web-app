@@ -19,8 +19,10 @@ data "google_project" "project" {
 }
 
 locals {
-  api_image = (var.database_type == "mysql" ? "gcr.io/sic-container-repo/todo-api" : "gcr.io/sic-container-repo/todo-api-postgres:latest")
-  fe_image  = "gcr.io/sic-container-repo/todo-fe"
+  api_image = var.database_type == "mysql"
+    ? "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-api:v0.0.1"
+    : "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-api-postgres:v0.0.1"
+  fe_image  = "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-fe:v0.0.1"
 
   api_env_vars_postgresql = {
     redis_host = google_redis_instance.main.host
