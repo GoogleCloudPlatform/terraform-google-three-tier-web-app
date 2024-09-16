@@ -19,9 +19,7 @@ data "google_project" "project" {
 }
 
 locals {
-  api_image = (var.database_type == "mysql"
-    ? "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-api:v0.0.1"
-    : "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-api-postgres:v0.0.1")
+  api_image = (var.database_type == "mysql" ? "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-api:v0.0.1" : "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-api-postgres:v0.0.1")
   fe_image  = "us-docker.pkg.dev/google-samples/containers/jss/three-tier-web-app-fe:v0.0.1"
 
   api_env_vars_postgresql = {
