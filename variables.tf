@@ -38,6 +38,16 @@ variable "deployment_name" {
   default     = "three-tier-app"
 }
 
+variable "database_type" {
+  type        = string
+  description = "Cloud SQL Database flavor, mysql or postgresql"
+  default     = "postgresql"
+  validation {
+    condition     = contains(["mysql", "postgresql"], var.database_type)
+    error_message = "Must be either \"mysql\" or \"postgresql\"."
+  }
+}
+
 variable "labels" {
   type        = map(string)
   description = "A map of labels to apply to contained resources."
