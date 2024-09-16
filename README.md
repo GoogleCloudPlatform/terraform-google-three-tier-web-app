@@ -1,5 +1,8 @@
 # Three-tier web app
 
+This repository contains the Terraform deployed by the Jump Start Solution (JSS) titled [Three-tier web application](https://console.cloud.google.com/products/solutions/details/three-tier-web-app).
+The source code for web application (frontend and middle tier) deployed by this JSS can be found at [github.com/GoogleCloudPlatform/deploystack-three-tier-app](https://github.com/GoogleCloudPlatform/deploystack-three-tier-app).
+
 ### Tagline
 Create a web app using a three-tiered architecture
 
@@ -40,6 +43,7 @@ Functional examples are included in the
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| database\_type | Cloud SQL Database flavor, mysql or postgresql | `string` | `"postgresql"` | no |
 | deployment\_name | The name of this particular deployment, will get added as a prefix to most resources. | `string` | `"three-tier-app"` | no |
 | enable\_apis | Whether or not to enable underlying apis in this solution. . | `string` | `true` | no |
 | labels | A map of labels to apply to contained resources. | `map(string)` | <pre>{<br>  "three-tier-app": true<br>}</pre> | no |
