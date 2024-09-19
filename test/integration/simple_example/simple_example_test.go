@@ -22,7 +22,7 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
-	"github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
+	test "github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -133,7 +133,7 @@ func TestSimpleExample(t *testing.T) {
 		}
 
 		deploymentUrl := example.GetStringOutput("endpoint") // Looks like https://three-tier-app-fe-abcde12ghi-uc.a.run.app
-		integration.TestDeploymentUrl(t, assert, deploymentUrl)
+		test.TestDeploymentUrl(t, assert, deploymentUrl)
 	})
 	example.Test()
 }
