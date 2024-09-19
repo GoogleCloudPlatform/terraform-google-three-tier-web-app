@@ -22,8 +22,8 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
-	test "github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
 	"github.com/stretchr/testify/assert"
+	"github.com/terraform-google-modules/three-tier-app/test/integration"
 )
 
 // Retry if these errors are encountered.
