@@ -38,7 +38,7 @@ func TestMysql(t *testing.T) {
 		// It helps ensure that a second "terraform apply" wouldn't result in resource deletions/replacements.
 		blueprintTest.DefaultVerify(assert)
 
-		deploymentUrl := blueprintTest.GetStringOutput("endpoint") // Looks like https://three-tier-app-fe-abcde12ghi-uc.a.run.app
+		deploymentUrl := blueprintTest.GetStringOutput("endpoint")
 		test.TestDeploymentUrl(t, assert, deploymentUrl)
 	})
 
