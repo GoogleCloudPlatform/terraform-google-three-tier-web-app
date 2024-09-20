@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	"github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
+	test "github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
 	"github.com/stretchr/testify/assert"
 )
 
