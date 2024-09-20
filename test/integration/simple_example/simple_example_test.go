@@ -133,7 +133,7 @@ func TestSimpleExample(t *testing.T) {
 		}
 
 		deploymentUrl := example.GetStringOutput("endpoint")
-		test.TestDeploymentUrl(t, assert, deploymentUrl)
+		test.TestDeploymentUrl(t, deploymentUrl)
 	})
 	example.Test()
 }

@@ -39,7 +39,7 @@ func TestMysql(t *testing.T) {
 		blueprintTest.DefaultVerify(assert)
 
 		deploymentUrl := blueprintTest.GetStringOutput("endpoint")
-		test.TestDeploymentUrl(t, assert, deploymentUrl)
+		test.TestDeploymentUrl(t, deploymentUrl)
 	})
 
 	blueprintTest.Test()
