@@ -132,7 +132,7 @@ func TestSimpleExample(t *testing.T) {
 			})
 		}
 
-		deploymentUrl := example.GetStringOutput("endpoint") // Looks like https://three-tier-app-fe-abcde12ghi-uc.a.run.app
+		deploymentUrl := example.GetStringOutput("endpoint")
 		test.TestDeploymentUrl(t, assert, deploymentUrl)
 	})
 	example.Test()
