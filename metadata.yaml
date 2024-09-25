@@ -51,9 +51,9 @@ spec:
   interfaces:
     variables:
       - name: database_type
-        description: Cloud SQL Database flavor, mysql or postgresql
+        description: Cloud SQL Database flavor, mysql or postgres
         varType: string
-        defaultValue: postgresql
+        defaultValue: postgres
       - name: deployment_name
         description: The name of this particular deployment, will get added as a prefix to most resources.
         varType: string

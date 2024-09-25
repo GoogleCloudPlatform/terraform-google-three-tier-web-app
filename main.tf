@@ -22,7 +22,7 @@ locals {
   api_image = (var.database_type == "mysql" ? "gcr.io/sic-container-repo/todo-api" : "gcr.io/sic-container-repo/todo-api-postgres:latest")
   fe_image  = "gcr.io/sic-container-repo/todo-fe"
 
-  api_env_vars_postgresql = {
+  api_env_vars_postgres = {
     redis_host = google_redis_instance.main.host
     db_host    = google_sql_database_instance.main.ip_address[0].ip_address
     db_user    = google_service_account.runsa.email
@@ -154,7 +154,7 @@ resource "google_sql_database_instance" "main" {
       zone = var.zone
     }
     dynamic "database_flags" {
-      for_each = var.database_type == "postgresql" ? [1] : []
+      for_each = var.database_type == "postgres" ? [1] : []
       content {
         name  = "cloudsql.iam_authentication"
         value = "on"
@@ -173,8 +173,8 @@ resource "google_sql_user" "main" {
   project         = var.project_id
   instance        = google_sql_database_instance.main.name
   deletion_policy = "ABANDON"
-  name            = var.database_type == "postgresql" ? "${google_service_account.runsa.account_id}@${var.project_id}.iam" : "foo"
-  type            = var.database_type == "postgresql" ? "CLOUD_IAM_SERVICE_ACCOUNT" : null
+  name            = var.database_type == "postgres" ? "${google_service_account.runsa.account_id}@${var.project_id}.iam" : "foo"
+  type            = var.database_type == "postgres" ? "CLOUD_IAM_SERVICE_ACCOUNT" : null
   password        = var.database_type == "mysql" ? "bar" : null
 }
 
@@ -197,7 +197,7 @@ resource "google_cloud_run_service" "api" {
       containers {
         image = local.api_image
         dynamic "env" {
-          for_each = var.database_type == "postgresql" ? local.api_env_vars_postgresql : local.api_env_vars_mysql
+          for_each = var.database_type == "postgres" ? local.api_env_vars_postgres : local.api_env_vars_mysql
           content {
             name  = env.key
             value = env.value
