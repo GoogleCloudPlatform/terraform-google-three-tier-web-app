@@ -20,7 +20,7 @@ data "google_project" "project" {
 
 locals {
   api_image = (var.database_type == "mysql" ? "gcr.io/sic-container-repo/todo-api" : "gcr.io/sic-container-repo/todo-api-postgres:latest")
-  fe_image  = "gcr.io/sic-container-repo/todo-fe" // Placeholder change
+  fe_image  = "gcr.io/sic-container-repo/todo-fe" // Placeholder change [updated to trigger re-run]
 
   api_env_vars_postgresql = {
     redis_host = google_redis_instance.main.host
