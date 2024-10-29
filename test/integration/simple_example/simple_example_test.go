@@ -22,6 +22,7 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
+	test "github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -130,6 +131,9 @@ func TestSimpleExample(t *testing.T) {
 				assert.Equal("ENABLED", match.Get("state").String(), "%s service should be enabled", tc.service)
 			})
 		}
+
+		deploymentUrl := example.GetStringOutput("endpoint")
+		test.TestDeploymentUrl(t, deploymentUrl)
 	})
 	example.Test()
 }

@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
+	test "github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,6 +37,9 @@ func TestMysql(t *testing.T) {
 		// DefaultVerify asserts no resource changes exist after apply.
 		// It helps ensure that a second "terraform apply" wouldn't result in resource deletions/replacements.
 		blueprintTest.DefaultVerify(assert)
+
+		deploymentUrl := blueprintTest.GetStringOutput("endpoint")
+		test.TestDeploymentUrl(t, deploymentUrl)
 	})
 
 	blueprintTest.Test()
