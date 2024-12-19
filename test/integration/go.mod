@@ -1,4 +1,4 @@
-module github.com/terraform-google-modules/three-tier-app/test/integration
+module github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/test/integration
 
 go 1.22
 
