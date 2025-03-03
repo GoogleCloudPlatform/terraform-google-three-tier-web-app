@@ -16,7 +16,18 @@
 
 locals {
   int_required_roles = [
-    "roles/owner"
+    "roles/artifactregistry.admin",
+    "roles/cloudsql.admin",
+    "roles/compute.networkAdmin",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.serviceAccountUser",
+    "roles/redis.admin",
+    "roles/resourcemanager.projectIamAdmin",
+    "roles/run.admin",
+    "roles/servicenetworking.serviceAgent",
+    "roles/serviceusage.serviceUsageViewer",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/vpcaccess.admin"
   ]
 }
 
