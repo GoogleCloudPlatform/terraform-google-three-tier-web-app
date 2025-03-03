@@ -108,10 +108,12 @@ resource "google_vpc_access_connector" "main" {
   network        = google_compute_network.main.name
   region         = var.region
   max_throughput = 300
-  depends_on     = [time_sleep.wait_for_network_deletion]
+  depends_on     = [time_sleep.wait_before_destroying_network]
 }
 
-resource "time_sleep" "wait_after_destroying_vpc_access_connector_before_destroying_network" {
+# The google_vpc_access_connector resource creates some firewalls that sometimes takes a while to destroy
+# and causes errors when we try to destroy the VPC network (google_compute_network).
+resource "time_sleep" "wait_before_destroying_network" {
   depends_on       = [google_compute_network.main]
   destroy_duration = "60s"
 }
