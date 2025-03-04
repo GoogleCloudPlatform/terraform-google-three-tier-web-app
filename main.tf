@@ -97,7 +97,7 @@ resource "google_service_networking_connection" "main" {
   network                 = google_compute_network.main.self_link
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.main.name]
-
+  depends_on              = [google_compute_network.main]
 }
 
 resource "google_vpc_access_connector" "main" {
@@ -108,6 +108,14 @@ resource "google_vpc_access_connector" "main" {
   network        = google_compute_network.main.name
   region         = var.region
   max_throughput = 300
+  depends_on     = [time_sleep.wait_before_destroying_network]
+}
+
+# The google_vpc_access_connector resource creates some firewalls that sometimes takes a while to destroy
+# and causes errors when we try to destroy the VPC network (google_compute_network).
+resource "time_sleep" "wait_before_destroying_network" {
+  depends_on       = [google_compute_network.main]
+  destroy_duration = "60s"
 }
 
 # Looked at using the module, but there doesn't seem to be a huge win there.
