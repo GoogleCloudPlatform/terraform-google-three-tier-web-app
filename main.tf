@@ -108,6 +108,7 @@ resource "google_vpc_access_connector" "main" {
   network        = google_compute_network.main.name
   region         = var.region
   max_throughput = 300
+  min_throughput = 200
   depends_on     = [time_sleep.wait_before_destroying_network]
 }
 
