@@ -97,6 +97,7 @@ resource "google_service_networking_connection" "main" {
   network                 = google_compute_network.main.self_link
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.main.name]
+  deletion_policy         = "ABANDON"
   depends_on              = [google_compute_network.main]
 }
 
@@ -108,6 +109,7 @@ resource "google_vpc_access_connector" "main" {
   network        = google_compute_network.main.name
   region         = var.region
   max_throughput = 300
+  min_throughput = 200
   depends_on     = [time_sleep.wait_before_destroying_network]
 }
 
