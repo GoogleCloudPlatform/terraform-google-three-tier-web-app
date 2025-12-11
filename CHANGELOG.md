@@ -8,6 +8,24 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.2.0](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.9...v0.2.0) (2025-12-11)
+
+
+### Features
+
+* Add MySQL support ([#138](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/138)) ([ab8330c](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/ab8330c7b98af1da592bc5d782a856566dc5df79))
+* Set Terraform required_version to &gt;= 1.5 ([#145](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/145)) ([0208bb9](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/0208bb95fa45e1a4dc77d057dcd37b438d2f386e))
+
+
+### Bug Fixes
+
+* Add link to app source code in README.md ([#148](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/148)) ([b4fef3c](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/b4fef3caf3a0fcb6795c92e938a2290cde6c17d8))
+* Default to us-central1 and us-central1-a ([#135](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/135)) ([2fe27b4](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/2fe27b46e7c63706db34f8857e6a51d0420798ef))
+* **deps:** Update Terraform terraform-google-modules/project-factory/google to v15.0.1 ([#125](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/125)) ([1455ae3](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/1455ae3edbee2ffe1a96de4609f26dd9045c036a))
+* Pin to latest `google` Terraform provider version ([#222](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/222)) ([68edfe6](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/68edfe6c7d476431997df966b6b16d3063fd9105))
+* Test the specific set of roles used in Cloud console ([#199](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/199)) ([d332bc8](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/d332bc8ab9882b142fa3634b1c45f4c596a2368f))
+* Wait between destroying connector and network ([#200](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/issues/200)) ([678f2c5](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/commit/678f2c528f4a1d1fbe982243a6fc3b6662d3c6d9))
+
 ## [0.1.9](https://github.com/GoogleCloudPlatform/terraform-google-three-tier-web-app/compare/v0.1.8...v0.1.9) (2024-04-23)
 
 
