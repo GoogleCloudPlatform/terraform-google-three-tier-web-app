@@ -31,11 +31,12 @@ locals {
     redis_port = "6379"
   }
 
+  mysql_username = "todo_user"
+
   api_env_vars_mysql = {
     REDISHOST = google_redis_instance.main.host
     todo_host = google_sql_database_instance.main.ip_address[0].ip_address
-    todo_user = "foo"
-    todo_pass = "bar"
+    todo_user = local.mysql_username
     todo_name = "todo"
     REDISPORT = "6379"
   }
@@ -58,6 +59,7 @@ module "project-services" {
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
+    "secretmanager.googleapis.com",
     "run.googleapis.com",
     "redis.googleapis.com",
   ]
@@ -179,13 +181,46 @@ resource "google_sql_database_instance" "main" {
 }
 
 
+resource "random_password" "mysql_password" {
+  count   = var.database_type == "mysql" ? 1 : 0
+  length  = 24
+  special = false
+}
+
+resource "google_secret_manager_secret" "mysql_password" {
+  count     = var.database_type == "mysql" ? 1 : 0
+  project   = var.project_id
+  secret_id = "${var.deployment_name}-mysql-password-${random_id.id.hex}"
+  labels    = var.labels
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [module.project-services]
+}
+
+resource "google_secret_manager_secret_version" "mysql_password" {
+  count       = var.database_type == "mysql" ? 1 : 0
+  secret      = google_secret_manager_secret.mysql_password[0].id
+  secret_data = random_password.mysql_password[0].result
+}
+
+resource "google_secret_manager_secret_iam_member" "mysql_password_accessor" {
+  count     = var.database_type == "mysql" ? 1 : 0
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.mysql_password[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.runsa.email}"
+}
+
 resource "google_sql_user" "main" {
   project         = var.project_id
   instance        = google_sql_database_instance.main.name
   deletion_policy = "ABANDON"
-  name            = var.database_type == "postgresql" ? "${google_service_account.runsa.account_id}@${var.project_id}.iam" : "foo"
+  name            = var.database_type == "postgresql" ? "${google_service_account.runsa.account_id}@${var.project_id}.iam" : local.mysql_username
   type            = var.database_type == "postgresql" ? "CLOUD_IAM_SERVICE_ACCOUNT" : null
-  password        = var.database_type == "mysql" ? "bar" : null
+  password        = one(random_password.mysql_password[*].result)
 }
 
 resource "google_sql_database" "database" {
@@ -213,6 +248,18 @@ resource "google_cloud_run_service" "api" {
             value = env.value
           }
         }
+        dynamic "env" {
+          for_each = var.database_type == "mysql" ? [1] : []
+          content {
+            name = "todo_pass"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.mysql_password[0].secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
       }
     }
 
@@ -230,12 +277,17 @@ resource "google_cloud_run_service" "api" {
     }
   }
   metadata {
+    annotations = {
+      "run.googleapis.com/ingress" = "internal-and-cloud-load-balancing"
+    }
     labels = var.labels
   }
   autogenerate_revision_name = true
   depends_on = [
     google_sql_user.main,
-    google_sql_database.database
+    google_sql_database.database,
+    google_secret_manager_secret_version.mysql_password,
+    google_secret_manager_secret_iam_member.mysql_password_accessor,
   ]
 }
 
@@ -272,12 +324,12 @@ resource "google_cloud_run_service" "fe" {
   }
 }
 
-resource "google_cloud_run_service_iam_member" "noauth_api" {
+resource "google_cloud_run_service_iam_member" "api_invoker" {
   location = google_cloud_run_service.api.location
   project  = google_cloud_run_service.api.project
   service  = google_cloud_run_service.api.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = "serviceAccount:${google_service_account.runsa.email}"
 }
 
 resource "google_cloud_run_service_iam_member" "noauth_fe" {
