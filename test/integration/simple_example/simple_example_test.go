@@ -86,7 +86,7 @@ func TestSimpleExample(t *testing.T) {
 			"Existence: Redis":            {subsection: "redis instances", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/instances/%s-cache", projectID, region, prefix)},
 			"Existence: SQL":              {subsection: "sql instances", field: "name", global: false, region: false, expected: sqlname},
 			"Existence: VPN Connector":    {subsection: "compute networks vpc-access connectors", field: "name", global: false, region: true, expected: fmt.Sprintf("projects/%s/locations/%s/connectors/%s-vpc-cx", projectID, region, prefix)},
-			"Existence: VPN Address":      {subsection: "compute addresses", field: "name", global: true, region: false, expected: fmt.Sprintf("%s-vpc-address", prefix)},
+			"Existence: PSC Address":      {subsection: "compute addresses", field: "name", global: false, region: true, expected: fmt.Sprintf("%s-sql-psc", prefix)},
 			"Existence: Network":          {subsection: "compute networks", field: "name", global: false, region: false, expected: fmt.Sprintf("%s-private-network", prefix)},
 		}
 
@@ -111,17 +111,16 @@ func TestSimpleExample(t *testing.T) {
 		serviceTests := map[string]struct {
 			service string
 		}{
-			"Service compute":           {service: "compute"},
-			"Service cloudapis":         {service: "cloudapis"},
-			"Service vpcaccess":         {service: "vpcaccess"},
-			"Service servicenetworking": {service: "servicenetworking"},
-			"Service cloudbuild":        {service: "cloudbuild"},
-			"Service sql-component":     {service: "sql-component"},
-			"Service sqladmin":          {service: "sqladmin"},
-			"Service storage":           {service: "storage"},
-			"Service secretmanager":     {service: "secretmanager"},
-			"Service run":               {service: "run"},
-			"Service redis":             {service: "redis"},
+			"Service compute":       {service: "compute"},
+			"Service cloudapis":     {service: "cloudapis"},
+			"Service vpcaccess":     {service: "vpcaccess"},
+			"Service cloudbuild":    {service: "cloudbuild"},
+			"Service sql-component": {service: "sql-component"},
+			"Service sqladmin":      {service: "sqladmin"},
+			"Service storage":       {service: "storage"},
+			"Service secretmanager": {service: "secretmanager"},
+			"Service run":           {service: "run"},
+			"Service redis":         {service: "redis"},
 		}
 
 		services := gcloud.Run(t, "services list", gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})).Array()

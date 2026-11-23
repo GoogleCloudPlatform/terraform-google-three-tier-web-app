@@ -100,4 +100,3 @@ spec:
     services:
       - cloudresourcemanager.googleapis.com
       - serviceusage.googleapis.com
-      - servicenetworking.googleapis.com

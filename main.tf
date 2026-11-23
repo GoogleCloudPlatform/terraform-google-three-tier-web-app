@@ -24,7 +24,7 @@ locals {
 
   api_env_vars_postgresql = {
     redis_host = google_redis_instance.main.host
-    db_host    = google_sql_database_instance.main.ip_address[0].ip_address
+    db_host    = google_compute_address.sql_psc.address
     db_user    = google_service_account.runsa.email
     db_conn    = google_sql_database_instance.main.connection_name
     db_name    = "todo"
@@ -35,7 +35,7 @@ locals {
 
   api_env_vars_mysql = {
     REDISHOST = google_redis_instance.main.host
-    todo_host = google_sql_database_instance.main.ip_address[0].ip_address
+    todo_host = google_compute_address.sql_psc.address
     todo_user = local.mysql_username
     todo_name = "todo"
     REDISPORT = "6379"
@@ -54,7 +54,6 @@ module "project-services" {
     "compute.googleapis.com",
     "cloudapis.googleapis.com",
     "vpcaccess.googleapis.com",
-    "servicenetworking.googleapis.com",
     "cloudbuild.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
@@ -85,22 +84,30 @@ resource "google_compute_network" "main" {
   project                 = var.project_id
 }
 
-resource "google_compute_global_address" "main" {
-  name          = "${var.deployment_name}-vpc-address"
-  provider      = google-beta
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = google_compute_network.main.name
-  project       = var.project_id
+data "google_compute_subnetwork" "main" {
+  name       = google_compute_network.main.name
+  region     = var.region
+  project    = var.project_id
+  depends_on = [google_compute_network.main]
 }
 
-resource "google_service_networking_connection" "main" {
-  network                 = google_compute_network.main.self_link
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.main.name]
-  deletion_policy         = "ABANDON"
-  depends_on              = [google_compute_network.main]
+# PSC = Private Service Connect
+resource "google_compute_address" "sql_psc" {
+  name         = "${var.deployment_name}-sql-psc"
+  project      = var.project_id
+  region       = var.region
+  address_type = "INTERNAL"
+  subnetwork   = data.google_compute_subnetwork.main.id
+}
+
+resource "google_compute_forwarding_rule" "sql_psc" {
+  name                  = "${var.deployment_name}-sql-psc"
+  project               = var.project_id
+  region                = var.region
+  network               = google_compute_network.main.id
+  ip_address            = google_compute_address.sql_psc.id
+  load_balancing_scheme = ""
+  target                = google_sql_database_instance.main.psc_service_attachment_link
 }
 
 resource "google_vpc_access_connector" "main" {
@@ -159,8 +166,12 @@ resource "google_sql_database_instance" "main" {
     disk_type             = "PD_SSD"
     user_labels           = var.labels
     ip_configuration {
-      ipv4_enabled    = false
-      private_network = "projects/${var.project_id}/global/networks/${google_compute_network.main.name}"
+      ipv4_enabled = false
+      # PSC = Private Service Connect
+      psc_config {
+        psc_enabled               = true
+        allowed_consumer_projects = [var.project_id]
+      }
     }
     location_preference {
       zone = var.zone
@@ -174,10 +185,6 @@ resource "google_sql_database_instance" "main" {
     }
   }
   deletion_protection = false
-
-  depends_on = [
-    google_service_networking_connection.main
-  ]
 }
 
 
