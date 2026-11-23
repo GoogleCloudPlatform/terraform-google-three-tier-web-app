@@ -119,6 +119,7 @@ func TestSimpleExample(t *testing.T) {
 			"Service sql-component":     {service: "sql-component"},
 			"Service sqladmin":          {service: "sqladmin"},
 			"Service storage":           {service: "storage"},
+			"Service secretmanager":     {service: "secretmanager"},
 			"Service run":               {service: "run"},
 			"Service redis":             {service: "redis"},
 		}
@@ -131,6 +132,28 @@ func TestSimpleExample(t *testing.T) {
 				assert.Equal("ENABLED", match.Get("state").String(), "%s service should be enabled", tc.service)
 			})
 		}
+
+		t.Run("API ingress and IAM restricted", func(t *testing.T) {
+			ops := gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json", "--region", region})
+			svc := gcloud.Run(t, fmt.Sprintf("run services describe %s-api", prefix), ops).Array()
+			annotations := svc[0].Get("metadata.annotations").Map()
+			assert.Equal("internal-and-cloud-load-balancing", annotations["run.googleapis.com/ingress"].String(), "expected API ingress to be restricted")
+
+			policy := gcloud.Run(t, fmt.Sprintf("run services get-iam-policy %s-api", prefix), ops).Array()
+			invokerSA := fmt.Sprintf("serviceAccount:%s-run-sa@%s.iam.gserviceaccount.com", prefix, projectID)
+			foundInvoker := false
+			for _, binding := range policy[0].Get("bindings").Array() {
+				if binding.Get("role").String() == "roles/run.invoker" {
+					for _, member := range binding.Get("members").Array() {
+						assert.NotEqual("allUsers", member.String(), "API service must not allow allUsers")
+						if member.String() == invokerSA {
+							foundInvoker = true
+						}
+					}
+				}
+			}
+			assert.True(foundInvoker, "expected runtime service account to have roles/run.invoker on API service")
+		})
 
 		deploymentUrl := example.GetStringOutput("endpoint")
 		test.TestDeploymentUrl(t, deploymentUrl)
