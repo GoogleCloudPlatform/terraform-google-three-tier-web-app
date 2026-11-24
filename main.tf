@@ -293,6 +293,8 @@ resource "google_cloud_run_service" "api" {
   depends_on = [
     google_sql_user.main,
     google_sql_database.database,
+    google_compute_forwarding_rule.sql_psc,
+    google_project_iam_member.allrun,
     google_secret_manager_secret_version.mysql_password,
     google_secret_manager_secret_iam_member.mysql_password_accessor,
   ]
