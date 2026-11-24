@@ -25,7 +25,6 @@ locals {
     "roles/resourcemanager.projectIamAdmin",
     "roles/run.admin",
     "roles/secretmanager.admin",
-    "roles/servicenetworking.serviceAgent",
     "roles/serviceusage.serviceUsageViewer",
     "roles/serviceusage.serviceUsageAdmin",
     "roles/vpcaccess.admin"
